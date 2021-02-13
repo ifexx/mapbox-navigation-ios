@@ -109,4 +109,35 @@ extension MapView {
         guard let latitude = locationManager.latestLocation?.coordinate.latitude else { return nil }
         return AltitudeForZoomLevel(Double(cameraView.zoom), cameraView.pitch, latitude, bounds.size)
     }
+    
+    var mainRouteLineParentLayerIdentifier: String? {
+        var parentLayer: String? = nil
+        let identifiers = [
+            IdentifierString.arrow,
+            IdentifierString.arrowSymbol,
+            IdentifierString.arrowCasingSymbol,
+            IdentifierString.arrowStroke,
+            IdentifierString.waypointCircle
+        ]
+        
+        guard let layers = try? __map.getStyleLayers().reversed() else { return nil }
+        for layer in layers {
+            if !(layer.type == "symbol") && !identifiers.contains(layer.id) {
+                let source = try? __map.getStyleLayerProperty(forLayerId: layer.id, property: "source").value as? String
+                let sourceLayer = try? __map.getStyleLayerProperty(forLayerId: layer.id, property: "source-layer").value as? String
+                
+                if let source = source,
+                   source.isEmpty,
+                   let sourceLayer = sourceLayer,
+                   sourceLayer.isEmpty {
+                    continue
+                }
+                
+                parentLayer = layer.id
+                break
+            }
+        }
+        
+        return parentLayer
+    }
 }
