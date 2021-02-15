@@ -6,6 +6,7 @@
 * The CarPlay guidance panel now shows lane guidance. ([#1885](https://github.com/mapbox/mapbox-navigation-ios/pull/1885))
 * Fixed an issue where lane guidance icons would indicate the wrong arrow for certain maneuvers. ([#2796](https://github.com/mapbox/mapbox-navigation-ios/pull/2796)) 
 * Fixed a crash showing a junction view. ([#2805](https://github.com/mapbox/mapbox-navigation-ios/pull/2805))
+* Refactored `StatusView.swift` to allow the to use of multilpe status banners. Statuses can be added with `addNewStatus(status:)` and hidden with `hideStatus(using:)`. ([#2747](https://github.com/mapbox/mapbox-navigation-ios/pull/2747))
 
 ## v1.2.1
 
