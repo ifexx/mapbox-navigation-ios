@@ -43,7 +43,9 @@ extension Route {
         }
     }
     
-    func congestionFeatures(legIndex: Int? = nil, isAlternativeRoute: Bool = false) -> [Feature] {
+    func congestionFeatures(legIndex: Int? = nil,
+                            isAlternativeRoute: Bool = false,
+                            roadClassesWithOverriddenCongestionLevels: Set<MapboxStreetsRoadClass>? = nil) -> [Feature] {
         guard let coordinates = shape?.coordinates, let shape = shape else { return [] }
         var features: [Feature] = []
         
@@ -60,7 +62,9 @@ extension Route {
                     return index == 0 ? stepCoordinates : allCoordinates + stepCoordinates.suffix(from: 1)
                 }
                 
-                let mergedCongestionSegments = legCoordinates.combined(congestionLevels)
+                let mergedCongestionSegments = legCoordinates.combined(congestionLevels,
+                                                                       streetsRoadClasses: leg.streetsRoadClasses,
+                                                                       roadClassesWithOverriddenCongestionLevels: roadClassesWithOverriddenCongestionLevels)
                 
                 legFeatures = mergedCongestionSegments.map { (congestionSegment: CongestionSegment) -> Feature in
                     var feature = Feature(LineString(congestionSegment.0))

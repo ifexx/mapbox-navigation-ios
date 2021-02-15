@@ -206,7 +206,8 @@ extension NavigationMapView {
                 return
             }
             let newFractionTraveled = self.preFractionTraveled + traveledDifference * timePassedInMilliseconds.truncatingRemainder(dividingBy: 1000) / 1000
-            let mainRouteLayerGradient = self.routeLineGradient(routeProgress.route.congestionFeatures(), fractionTraveled: newFractionTraveled)
+            let mainRouteLayerGradient = self.routeLineGradient(routeProgress.route.congestionFeatures(roadClassesWithOverriddenCongestionLevels: self.roadClassesWithOverriddenCongestionLevels),
+                                                                fractionTraveled: newFractionTraveled)
             let mainRouteCasingLayerGradient = self.routeLineGradient(fractionTraveled: newFractionTraveled)
             
             guard var mainRouteLineLayer = try? self.mapView.style.getLayer(with: mainRouteLayerIdentifier, type: LineLayer.self).get(),

@@ -458,7 +458,7 @@ open class NavigationMapView: UIView {
             lineLayer?.layout?.lineCap = .round
             
             if isMainRoute {
-                let gradientStops = routeLineGradient(route.congestionFeatures(),
+                let gradientStops = routeLineGradient(route.congestionFeatures(roadClassesWithOverriddenCongestionLevels: roadClassesWithOverriddenCongestionLevels),
                                                       fractionTraveled: routeLineTracksTraversal ? fractionTraveled : 0.0)
                 lineLayer?.paint?.lineGradient = .expression((Expression.routeLineGradientExpression(gradientStops)))
             } else {
