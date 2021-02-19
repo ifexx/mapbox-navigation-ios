@@ -1,35 +1,42 @@
 import MapboxMaps
 
-class NavigationCameraStateTransition: NavigationCameraStateTransitionable {
+public class NavigationCameraStateTransition: CameraStateTransition {
 
-    fileprivate weak var mapView: MapView?
+    weak public var mapView: MapView?
     
-    fileprivate var navigationCameraTransition: NavigationCameraTransition!
-    
-    required init(_ mapView: MapView) {
+    required public init(_ mapView: MapView) {
         self.mapView = mapView
-        self.navigationCameraTransition = NavigationCameraTransition(mapView)
     }
     
-    func transitionToFollowing(_ cameraOptions: CameraOptions) {
-        return navigationCameraTransition.transitionFromLowZoomToHighZoom(cameraOptions)
+    public func transitionToFollowing(_ cameraOptions: CameraOptions, completion: ((Bool) -> Void)? = nil) {
+        // TODO: Replace with specific set of animations.
+        mapView?.cameraManager.setCamera(to: cameraOptions,
+                                         animated: true,
+                                         duration: 1.0,
+                                         completion: completion)
     }
-    
-    func transitionToOverview(_ cameraOptions: CameraOptions) {
-        let currentZoom = mapView?.zoom ?? 0.0
-        
-        if currentZoom <= cameraOptions.zoom ?? currentZoom {
-            navigationCameraTransition.transitionFromLowZoomToHighZoom(cameraOptions)
-        } else {
-            navigationCameraTransition.transitionFromHighZoomToLowZoom(cameraOptions)
-        }
+
+    public func transitionToOverview(_ cameraOptions: CameraOptions, completion: ((Bool) -> Void)? = nil) {
+        // TODO: Replace with specific set of animations.
+        mapView?.cameraManager.setCamera(to: cameraOptions,
+                                         animated: true,
+                                         duration: 1.0,
+                                         completion: completion)
     }
-    
-    func updateForFollowing(_ cameraOptions: CameraOptions) {
-        navigationCameraTransition.transitionLinear(cameraOptions)
+
+    public func updateForFollowing(_ cameraOptions: CameraOptions, completion: ((Bool) -> Void)? = nil) {
+        // TODO: Replace with specific set of animations.
+        mapView?.cameraManager.setCamera(to: cameraOptions,
+                                         animated: true,
+                                         duration: 1.0,
+                                         completion: completion)
     }
-    
-    func updateForOverview(_ cameraOptions: CameraOptions) {
-        navigationCameraTransition.transitionLinear(cameraOptions)
+
+    public func updateForOverview(_ cameraOptions: CameraOptions, completion: ((Bool) -> Void)? = nil) {
+        // TODO: Replace with specific set of animations.
+        mapView?.cameraManager.setCamera(to: cameraOptions,
+                                         animated: true,
+                                         duration: 1.0,
+                                         completion: completion)
     }
 }

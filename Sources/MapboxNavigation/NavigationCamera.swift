@@ -1,34 +1,88 @@
+import Foundation
 import MapboxMaps
 
-public class NavigationCamera {
+public class NavigationCamera: NSObject, ViewportDataSourceDelegate {
     
-    public weak var delegate: NavigationCameraDelegate?
-    
-    fileprivate var navigationCameraState: NavigationCameraState = .idle {
+    public private(set) var navigationCameraState: NavigationCameraState = .idle {
         didSet {
             delegate?.navigationCameraStateDidChange(navigationCameraState)
+            NotificationCenter.default.post(name: .navigationCameraStateDidChange, object: self, userInfo: [
+                NavigationCamera.navigationCameraStateDidChangeKey: navigationCameraState,
+            ])
         }
     }
     
-    fileprivate weak var mapView: MapView?
+    public var viewportDataSource: ViewportDataSource {
+        didSet {
+            viewportDataSource.delegate = self
+        }
+    }
     
-    fileprivate var viewportDataSource: ViewportDataSource
+    public var cameraStateTransition: CameraStateTransition
     
-    fileprivate var stateTransition: NavigationCameraStateTransition
+    weak var mapView: MapView?
     
-    required init(_ mapView: MapView, viewportDataSource: ViewportDataSource = NavigationViewportDataSource()) {
+    weak var delegate: NavigationCameraDelegate?
+    
+    var navigationCameraType: NavigationCameraType = .mobile
+    
+    public required init(_ mapView: MapView, navigationCameraType: NavigationCameraType = .mobile) {
         self.mapView = mapView
-        self.viewportDataSource = viewportDataSource
-        self.stateTransition = NavigationCameraStateTransition(mapView)
+        self.viewportDataSource = NavigationViewportDataSource(mapView)
+        self.cameraStateTransition = NavigationCameraStateTransition(mapView)
+        self.navigationCameraType = navigationCameraType
         
-        registerObservers()
-        // makeGestureRecognizersRespectCourseTracking()
-        // makeGestureRecognizersUpdateCourseView()
+        super.init()
+        
+        self.viewportDataSource.delegate = self
+        
+        setupGestureRegonizers()
     }
     
-    func registerObservers() {
-        viewportDataSource.registerUpdateObserver(self)
+    // MARK: - Setting-up methods
+    
+    func setupGestureRegonizers() {
+        makeGestureRecognizersRespectCourseTracking()
     }
+    
+    // MARK: - ViewportDataSourceDelegate methods
+    
+    public func viewportDataSource(_ dataSource: ViewportDataSource, didUpdate cameraOptions: [String : CameraOptions]) {
+        NSLog("[NavigationCamera] Current camera state: \(navigationCameraState)")
+        
+        switch navigationCameraState {
+        case .following:
+            switch navigationCameraType {
+            case .headUnit:
+                if let followingHeadUnitCamera = cameraOptions[NavigationViewportDataSource.followingHeadUnitCameraKey] {
+                    cameraStateTransition.updateForFollowing(followingHeadUnitCamera, completion: nil)
+                }
+            case .mobile:
+                if let followingMobileCamera = cameraOptions[NavigationViewportDataSource.followingMobileCameraKey] {
+                    cameraStateTransition.updateForFollowing(followingMobileCamera, completion: nil)
+                }
+            }
+            break
+
+        case .overview:
+            switch navigationCameraType {
+            case .headUnit:
+                if let overviewHeadUnitCamera = cameraOptions[NavigationViewportDataSource.overviewHeadUnitCameraKey] {
+                    cameraStateTransition.updateForOverview(overviewHeadUnitCamera, completion: nil)
+                }
+            case .mobile:
+                if let overviewMobileCamera = cameraOptions[NavigationViewportDataSource.overviewMobileCameraKey] {
+                    cameraStateTransition.updateForOverview(overviewMobileCamera, completion: nil)
+                }
+            }
+            break
+
+        case .idle, .transitionToFollowing, .transitionToOverview:
+            break
+        }
+    }
+    
+    // MARK: - NavigationCamera state related methods
     
     public func requestNavigationCameraToFollowing() {
         switch navigationCameraState {
@@ -38,9 +92,17 @@ public class NavigationCamera {
         case .idle, .transitionToOverview, .overview:
             navigationCameraState = .transitionToFollowing
             
-            stateTransition.transitionToFollowing(viewportDataSource.getViewportData().cameraForFollowing)
+            var cameraOptions: CameraOptions
+            switch navigationCameraType {
+            case .mobile:
+                cameraOptions = viewportDataSource.followingMobileCamera
+            case .headUnit:
+                cameraOptions = viewportDataSource.followingHeadUnitCamera
+            }
             
-            navigationCameraState = .following
+            cameraStateTransition.transitionToFollowing(cameraOptions) { _ in
+                self.navigationCameraState = .following
+            }
             
             break
         }
@@ -52,62 +114,41 @@ public class NavigationCamera {
             return
             
         case .idle, .transitionToFollowing, .following:
-            navigationCameraState = .transitionToFollowing
+            navigationCameraState = .transitionToOverview
             
-            stateTransition.transitionToOverview(viewportDataSource.getViewportData().cameraForOverview)
+            var cameraOptions: CameraOptions
+            switch navigationCameraType {
+            case .mobile:
+                cameraOptions = viewportDataSource.overviewMobileCamera
+            case .headUnit:
+                cameraOptions = viewportDataSource.overviewHeadUnitCamera
+            }
             
-            navigationCameraState = .following
+            cameraStateTransition.transitionToOverview(cameraOptions) { _ in
+                self.navigationCameraState = .overview
+            }
             
             break
         }
     }
     
-    public func requestNavigationCameraToIdle() {
+    @objc public func requestNavigationCameraToIdle() {
+        NSLog("[NavigationCamera] Requesting NavigationCamera to move to idle state.")
         if navigationCameraState == .idle { return }
         
-        // TODO: Switch to idle state after touching map view.
+        // TODO: Cancel all pending animations.
         
         navigationCameraState = .idle
     }
     
     /**
-     Modifies the gesture recognizers to also disable course tracking.
+     Modifies `MapView` gesture recognizers to disable follow mode and move `NavigationCamera` to
+     `NavigationCameraState.idle` state.
      */
     func makeGestureRecognizersRespectCourseTracking() {
         for gestureRecognizer in mapView?.gestureRecognizers ?? []
         where gestureRecognizer is UIPanGestureRecognizer || gestureRecognizer is UIRotationGestureRecognizer {
-            // gestureRecognizer.addTarget(self, action: #selector(disableUserCourseTracking))
-            
-            requestNavigationCameraToIdle()
-            break
-        }
-    }
-    
-    /**
-     
-     */
-    func makeGestureRecognizersUpdateCourseView() {
-        // for gestureRecognizer in mapView?.gestureRecognizers ?? [] {
-        //     gestureRecognizer.addTarget(self, action: #selector(updateCourseView(_:)))
-        // }
-    }
-}
-
-extension NavigationCamera: ViewportDataSourceUpdateObserver {
-    
-    func viewportDataSourceUpdated(_ viewportData: ViewportData) {
-        NSLog("!!! \(navigationCameraState)")
-        
-        switch navigationCameraState {
-        case .following:
-            stateTransition.updateForFollowing(viewportData.cameraForFollowing)
-            break
-            
-        case .overview:
-            stateTransition.updateForFollowing(viewportData.cameraForFollowing)
-            break
-            
-        case .idle, .transitionToFollowing, .transitionToOverview:
+            gestureRecognizer.addTarget(self, action: #selector(requestNavigationCameraToIdle))
             break
         }
     }

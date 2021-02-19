@@ -10,9 +10,8 @@ import MapboxMaps
 extension ViewController {
     
     func setupPassiveLocationManager(_ navigationMapView: NavigationMapView) {
-        setupFreeDriveStyledFeatures()
+        setupFreeDriveStyledFeatures(navigationMapView)
         
-        let passiveLocationDataSource = PassiveLocationDataSource()
         let passiveLocationManager = PassiveLocationManager(dataSource: passiveLocationDataSource)
         navigationMapView.mapView.locationManager.overrideLocationProvider(with: passiveLocationManager)
         
@@ -46,7 +45,7 @@ extension ViewController {
         updateFreeDriveStyledFeatures()
     }
     
-    func setupFreeDriveStyledFeatures() {
+    func setupFreeDriveStyledFeatures(_ navigationMapView: NavigationMapView) {
         trackStyledFeature = StyledFeature(sourceIdentifier: "trackSourceIdentifier",
                                            layerIdentifier: "trackLayerIdentifier",
                                            color: .darkGray,
@@ -58,6 +57,12 @@ extension ViewController {
                                               color: .lightGray,
                                               lineWidth: 3.0,
                                               lineString: LineString([]))
+        
+        navigationMapView.mapView.on(.styleLoadingFinished, handler: { [weak self] _ in
+            guard let self = self else { return }
+            self.addStyledFeature(self.trackStyledFeature)
+            self.addStyledFeature(self.rawTrackStyledFeature)
+        })
     }
     
     func updateFreeDriveStyledFeatures() {

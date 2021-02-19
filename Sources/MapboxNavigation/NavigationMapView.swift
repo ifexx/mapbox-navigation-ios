@@ -28,21 +28,6 @@ open class NavigationMapView: UIView {
     public var minimumFramesPerSecond = PreferredFPS.normal
     
     /**
-     Returns the altitude that the map camera initally defaults to.
-     */
-    public var defaultAltitude: CLLocationDistance = 1000.0
-    
-    /**
-     Returns the altitude the map conditionally zooms out to when user is on a motorway, and the maneuver length is sufficently long.
-     */
-    public var zoomedOutMotorwayAltitude: CLLocationDistance = 2000.0
-    
-    /**
-     Returns the threshold for what the map considers a "long-enough" maneuver distance to trigger a zoom-out when the user enters a motorway.
-     */
-    public var longManeuverDistance: CLLocationDistance = 1000.0
-    
-    /**
      Maximum distance the user can tap for a selection to be valid when selecting an alternate route.
      */
     public var tapGestureDistanceThreshold: CGFloat = 50
@@ -54,6 +39,11 @@ open class NavigationMapView: UIView {
      will be replaced with the `CongestionLevel.low` congestion level.
      */
     public var roadClassesWithOverriddenCongestionLevels: Set<MapboxStreetsRoadClass>? = nil
+    
+    /**
+     `NavigationCamera`, which allows to control camera states.
+     */
+    public private(set) var navigationCamera: NavigationCamera!
     
     enum IdentifierType: Int {
         case source
@@ -113,15 +103,8 @@ open class NavigationMapView: UIView {
      */
     public weak var delegate: NavigationMapViewDelegate?
     
-    /**
-     The object that acts as the course tracking delegate of the map view.
-     */
-    public weak var courseTrackingDelegate: NavigationMapViewCourseTrackingDelegate?
-    
     var userLocationForCourseTracking: CLLocation?
-    var altitude: CLLocationDistance
     var routes: [Route]?
-    var isAnimatingToOverheadMode = false
     var routePoints: RoutePoints?
     var routeLineGranularDistances: RouteLineGranularDistances?
     var routeRemainingDistancesIndex: Int?
@@ -150,69 +133,10 @@ open class NavigationMapView: UIView {
         }
     }
     
-    // TODO: When using previous version of Maps SDK `showsUserLocation` was overridden property of `MGLMapView`. Clarify whether it needs to be exposed.
-    open var showsUserLocation: Bool {
-        get {
-            if tracksUserCourse || userLocationForCourseTracking != nil {
-                return !userCourseView.isHidden
-            }
-            
-            return mapView.locationManager.showUserLocation
-        }
-        set {
-            if tracksUserCourse || userLocationForCourseTracking != nil {
-                mapView.update {
-                    $0.location.showUserLocation = false
-                }
-                
-                userCourseView.isHidden = !newValue
-            } else {
-                userCourseView.isHidden = true
-
-                mapView.update {
-                    $0.location.showUserLocation = newValue
-                }
-            }
-        }
-    }
-    
     /**
      The minimum default insets from the content frame to the edges of the user course view.
      */
     static let courseViewMinimumInsets = UIEdgeInsets(top: 50, left: 50, bottom: 50, right: 50)
-    
-    /**
-     Center point of the user course view in screen coordinates relative to the map view.
-     - seealso: NavigationMapViewDelegate.navigationMapViewUserAnchorPoint(_:)
-     */
-    var userAnchorPoint: CGPoint {
-        if let anchorPoint = delegate?.navigationMapViewUserAnchorPoint(self), anchorPoint != .zero {
-            return anchorPoint
-        }
-        // TODO: Verify whether content insets verification is required.
-        let contentFrame = bounds
-        return CGPoint(x: contentFrame.midX, y: contentFrame.midY)
-    }
-    
-    /**
-     Determines whether the map should follow the user location and rotate when the course changes.
-     - seealso: NavigationMapViewCourseTrackingDelegate
-     */
-    open var tracksUserCourse: Bool = false {
-        didSet {
-            if tracksUserCourse {
-                enableFrameByFrameCourseViewTracking(for: 3)
-                altitude = defaultAltitude
-                showsUserLocation = true
-                courseTrackingDelegate?.navigationMapViewDidStartTrackingCourse(self)
-            } else {
-                courseTrackingDelegate?.navigationMapViewDidStopTrackingCourse(self)
-            }
-            if let location = userLocationForCourseTracking {
-                updateCourseTracking(location: location, animated: true)
-            }
-        }
-    }
 
     /**
      A type that represents a `UIView` that is `CourseUpdatable`.
@@ -232,15 +156,20 @@ open class NavigationMapView: UIView {
     }
     
     public override init(frame: CGRect) {
-        altitude = defaultAltitude
         super.init(frame: frame)
         
         setupMapView(frame)
         commonInit()
     }
     
+    public init(frame: CGRect, navigationCameraType: NavigationCameraType = .mobile) {
+        super.init(frame: frame)
+        
+        setupMapView(frame, navigationCameraType: navigationCameraType)
+        commonInit()
+    }
+    
     public required init?(coder: NSCoder) {
-        altitude = defaultAltitude
         super.init(coder: coder)
         
         mapView = MapView(coder: coder)
@@ -250,14 +179,12 @@ open class NavigationMapView: UIView {
     }
     
     fileprivate func commonInit() {
-        makeGestureRecognizersRespectCourseTracking()
         makeGestureRecognizersUpdateCourseView()
         setupGestureRecognizers()
         installUserCourseView()
-        showsUserLocation = false
     }
     
-    func setupMapView(_ frame: CGRect) {
+    func setupMapView(_ frame: CGRect, navigationCameraType: NavigationCameraType = .mobile) {
         guard let accessToken = AccountManager.shared.accessToken else {
             fatalError("Access token was not set.")
         }
@@ -279,6 +206,8 @@ open class NavigationMapView: UIView {
         addSubview(mapView)
         
         mapView.pinTo(parentView: self)
+        
+        navigationCamera = NavigationCamera(mapView, navigationCameraType: navigationCameraType)
     }
     
     func setupGestureRecognizers() {
@@ -311,11 +240,9 @@ open class NavigationMapView: UIView {
         super.layoutSubviews()
         
         // If the map is in tracking mode, make sure we update the camera and anchor after the layout pass.
-        if tracksUserCourse {
-            updateCourseTracking(location: userLocationForCourseTracking, camera:mapView.cameraView.camera, animated: false)
-            
-            // TODO: Find appropriate place where anchor can be updated.
-            mapView.cameraView.anchor = userAnchorPoint
+        if navigationCamera.navigationCameraState == .following ||
+            navigationCamera.navigationCameraState == .transitionToFollowing {
+            updateCourseTracking(location: userLocationForCourseTracking, animated: false)
         }
     }
     
@@ -325,7 +252,7 @@ open class NavigationMapView: UIView {
      This method accounts for the proximity to a maneuver and the current power source. It has no effect if `tracksUserCourse` is set to `true`.
      */
     open func updatePreferredFrameRate(for routeProgress: RouteProgress) {
-        guard tracksUserCourse else { return }
+        guard navigationCamera.navigationCameraState == .following else { return }
         
         let stepProgress = routeProgress.currentLegProgress.currentStepProgress
         let expectedTravelTime = stepProgress.step.expectedTravelTime
@@ -360,21 +287,15 @@ open class NavigationMapView: UIView {
     // MARK: - User tracking methods
     
     func installUserCourseView() {
-        if let location = userLocationForCourseTracking {
-            updateCourseTracking(location: location)
-        }
+        userCourseView.isHidden = true
         mapView.addSubview(userCourseView)
     }
     
-    @objc private func disableUserCourseTracking() {
-        guard tracksUserCourse else { return }
-        tracksUserCourse = false
-    }
-    
-    public func updateCourseTracking(location: CLLocation?, camera: CameraOptions? = nil, animated: Bool = false) {
-        // While animating to overhead mode, don't animate the puck.
-        let duration: TimeInterval = animated && !isAnimatingToOverheadMode ? 1 : 0
+    public func updateCourseTracking(location: CLLocation?, animated: Bool = false) {
         userLocationForCourseTracking = location
+        
+        // While animating to overview mode, don't animate the puck.
+        let duration: TimeInterval = animated && navigationCamera.navigationCameraState != .transitionToOverview ? 1 : 0
         guard let location = location, CLLocationCoordinate2DIsValid(location.coordinate) else {
             return
         }
@@ -384,30 +305,19 @@ open class NavigationMapView: UIView {
             
             self?.userCourseView.center = point
         }
-        
-        if tracksUserCourse {
-            centerUserCourseView()
-            
-            let zoomLevel = CGFloat(ZoomLevelForAltitude(altitude,
-                                                         self.mapView.pitch,
-                                                         location.coordinate.latitude,
-                                                         self.mapView.bounds.size))
-            
-            let camera = camera ?? CameraOptions(center: location.coordinate,
-                                                 zoom: zoomLevel,
-                                                 bearing: location.course,
-                                                 pitch: 45)
-            mapView.cameraManager.setCamera(to: camera, animated: animated, duration: duration, completion: nil)
-        } else {
-            // Animate course view updates in overview mode
-            UIView.animate(withDuration: duration, delay: 0, options: [.curveLinear], animations: centerUserCourseView)
+
+        if userCourseView.isHidden {
+            userCourseView.isHidden = false
         }
+        
+        UIView.animate(withDuration: duration, delay: 0, options: [.curveLinear], animations: centerUserCourseView)
         
         userCourseView.update(location: location,
                               pitch: mapView.cameraView.pitch,
                               direction: mapView.bearing,
                               animated: animated,
-                              tracksUserCourse: tracksUserCourse)
+                              tracksUserCourse: navigationCamera.navigationCameraState == .following ||
+                                navigationCamera.navigationCameraState == .transitionToFollowing)
     }
     
     // MARK: Feature Addition/removal properties and methods
@@ -429,18 +339,7 @@ open class NavigationMapView: UIView {
         show(routes)
         showWaypoints(on: activeRoute)
         
-        fit(to: activeRoute, facing: 0, animated: animated)
-    }
-    
-    func fit(to route: Route, facing direction: CLLocationDirection = 0, animated: Bool = false) {
-        guard let shape = route.shape, !shape.coordinates.isEmpty else { return }
-        
-        let newCamera = mapView.cameraManager.camera(fitting: .lineString(shape),
-                                                     edgePadding: safeArea + NavigationMapView.defaultPadding,
-                                                     bearing: CGFloat(direction),
-                                                     pitch: 0)
-        
-        mapView.cameraManager.setCamera(to: newCamera, animated: animated, completion: nil)
+        navigationCamera.requestNavigationCameraToOverview()
     }
     
     public func show(_ routes: [Route], legIndex: Int = 0) {
@@ -930,35 +829,6 @@ open class NavigationMapView: UIView {
         }
     }
     
-    /**
-     Sets the camera directly over a series of coordinates.
-     */
-    public func setOverheadCameraView(from userLocation: CLLocation, along lineString: LineString, for padding: UIEdgeInsets) {
-        isAnimatingToOverheadMode = true
-        tracksUserCourse = false
-    
-        // TODO: Implement functionality which allows to change camera options based on traversed distance.
-        
-        let newCamera = mapView.cameraManager.camera(fitting: .lineString(lineString),
-                                                     edgePadding: padding,
-                                                     bearing: 0,
-                                                     pitch: 0)
-        
-        mapView.cameraManager.setCamera(to: newCamera, animated: true, duration: 1) { [weak self] _ in
-            self?.isAnimatingToOverheadMode = false
-        }
-
-        updateCourseView(to: userLocation, pitch: newCamera.pitch, direction: newCamera.bearing, animated: true)
-    }
-    
-    /**
-     Recenters the camera and begins tracking the user's location.
-     */
-    public func recenterMap() {
-        tracksUserCourse = true
-        enableFrameByFrameCourseViewTracking(for: 3)
-    }
-    
     // MARK: - Gesture recognizers methods
     
     /**
@@ -1031,20 +901,6 @@ open class NavigationMapView: UIView {
     }
     
     @objc func updateCourseView(_ sender: UIGestureRecognizer) {
-        if sender.state == .ended, let validAltitude = mapView.altitude {
-            altitude = validAltitude
-            enableFrameByFrameCourseViewTracking(for: 2)
-        }
-        
-        // Capture altitude for double tap and two finger tap after animation finishes
-        if sender is UITapGestureRecognizer, sender.state == .ended {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3, execute: {
-                if let altitude = self.mapView.altitude {
-                    self.altitude = altitude
-                }
-            })
-        }
-        
         if let panGesture = sender as? UIPanGestureRecognizer,
            sender.state == .ended || sender.state == .cancelled {
             let velocity = panGesture.velocity(in: self)
@@ -1062,16 +918,6 @@ open class NavigationMapView: UIView {
     
     // MARK: - Utility methods
     
-    /**
-     Modifies the gesture recognizers to also disable course tracking.
-     */
-    func makeGestureRecognizersRespectCourseTracking() {
-        for gestureRecognizer in mapView.gestureRecognizers ?? []
-        where gestureRecognizer is UIPanGestureRecognizer || gestureRecognizer is UIRotationGestureRecognizer {
-            gestureRecognizer.addTarget(self, action: #selector(disableUserCourseTracking))
-        }
-    }
-    
     func makeGestureRecognizersUpdateCourseView() {
         for gestureRecognizer in mapView.gestureRecognizers ?? [] {
             gestureRecognizer.addTarget(self, action: #selector(updateCourseView(_:)))
@@ -1079,6 +925,8 @@ open class NavigationMapView: UIView {
     }
     
     private func updateCourseView(to location: CLLocation, pitch: CGFloat? = nil, direction: CLLocationDirection? = nil, animated: Bool = false) {
+        let tracksUserCourse = navigationCamera.navigationCameraState == .following ||
+            navigationCamera.navigationCameraState == .transitionToFollowing
         userCourseView.update(location: location,
                               pitch: pitch ?? mapView.cameraView.pitch,
                               direction: direction ?? mapView.bearing,

@@ -51,8 +51,7 @@ class CustomViewController: UIViewController {
         // Start navigation
         navigationService.start()
         
-        // Center map on user
-        navigationMapView.recenterMap()
+        // TODO: Center map on user.
         
         navigationMapView.mapView.on(.styleLoadingFinished, handler: { [weak self] _ in
             guard let route = self?.navigationService.route else { return }
@@ -122,7 +121,7 @@ class CustomViewController: UIViewController {
     }
     
     @IBAction func recenterMap(_ sender: Any) {
-        navigationMapView.recenterMap()
+        // TODO: Recenter map.
     }
     
     @IBAction func showFeedback(_ sender: Any) {
@@ -172,7 +171,7 @@ class CustomViewController: UIViewController {
         updatePreviewBannerWith(step: step, maneuverStep: maneuverStep)
         
         // stop tracking user, and move camera to step location
-        navigationMapView.tracksUserCourse = false
+        navigationMapView.navigationCamera.requestNavigationCameraToIdle()
         navigationMapView.enableFrameByFrameCourseViewTracking(for: 1)
         navigationMapView.mapView.cameraManager.setCamera(centerCoordinate: maneuverStep.maneuverLocation,
                                                           bearing: maneuverStep.initialHeading!,

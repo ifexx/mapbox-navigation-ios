@@ -18,9 +18,11 @@ class ViewController: UIViewController {
     
     var trackStyledFeature: StyledFeature!
     var rawTrackStyledFeature: StyledFeature!
+    let passiveLocationDataSource = PassiveLocationDataSource()
     
     typealias RouteRequestSuccess = ((RouteResponse) -> Void)
     typealias RouteRequestFailure = ((Error) -> Void)
+    typealias ActionHandler = (UIAlertAction) -> Void
     
     var navigationMapView: NavigationMapView! {
         didSet {
@@ -81,11 +83,6 @@ class ViewController: UIViewController {
         view.addSubview(navigationMapView)
         
         navigationMapView.delegate = self
-        navigationMapView.mapView.on(.styleLoadingFinished, handler: { [weak self] _ in
-            guard let self = self else { return }
-            self.addStyledFeature(self.trackStyledFeature)
-            self.addStyledFeature(self.rawTrackStyledFeature)
-        })
         navigationMapView.mapView.update {
             $0.location.showUserLocation = true
         }
@@ -163,8 +160,6 @@ class ViewController: UIViewController {
     private func presentActionsAlertController() {
         let alertController = UIAlertController(title: "Start Navigation", message: "Select the navigation type", preferredStyle: .actionSheet)
         
-        typealias ActionHandler = (UIAlertAction) -> Void
-        
         let basic: ActionHandler = { _ in self.startBasicNavigation() }
         let day: ActionHandler = { _ in self.startNavigation(styles: [DayStyle()]) }
         let night: ActionHandler = { _ in self.startNavigation(styles: [NightStyle()]) }
@@ -216,7 +211,7 @@ class ViewController: UIViewController {
         let navigationViewController = self.navigationViewController(navigationService: service)
         
         // Render part of the route that has been traversed with full transparency, to give the illusion of a disappearing route.
-        navigationViewController.routeLineTracksTraversal = true
+        navigationViewController.routeLineTracksTraversal = false
         
         // Example of building highlighting in 3D.
         navigationViewController.waypointStyle = .extrudedBuilding
@@ -228,6 +223,8 @@ class ViewController: UIViewController {
         navigationViewController.floatingButtonsPosition = .topTrailing
         
         present(navigationViewController, completion: nil)
+        
+        passiveLocationDataSource.systemLocationManager.stopUpdatingLocation()
     }
     
     func startCustomNavigation() {
@@ -253,6 +250,8 @@ class ViewController: UIViewController {
         navigationViewController.delegate = self
 
         presentAndRemoveMapview(navigationViewController, completion: beginCarPlayNavigation)
+        
+        passiveLocationDataSource.systemLocationManager.stopUpdatingLocation()
     }
     
     func startGuidanceCardsNavigation() {
@@ -312,12 +311,18 @@ class ViewController: UIViewController {
         let alertController = UIAlertController(title: "Perform action",
                                                 message: "Select specific action to perform it", preferredStyle: .actionSheet)
         
-        typealias ActionHandler = (UIAlertAction) -> Void
-        
         let toggleDayNightStyle: ActionHandler = { _ in self.toggleDayNightStyle() }
+        let requestNavigationFollowingCamera: ActionHandler = { _ in self.requestNavigationFollowingCamera() }
+        let requestNavigationDefaultCamera: ActionHandler = { _ in self.requestNavigationDefaultCamera() }
+        let requestNavigationIdleCamera: ActionHandler = { _ in self.requestNavigationIdleCamera() }
+        let overrideViewportDataSourceAndCameraTransition: ActionHandler = { _ in self.overrideViewportDataSourceAndCameraTransition() }
         
         let actions: [(String, UIAlertAction.Style, ActionHandler?)] = [
             ("Toggle Day/Night Style", .default, toggleDayNightStyle),
+            ("Request Following Camera", .default, requestNavigationFollowingCamera),
+            ("Request Default Camera", .default, requestNavigationDefaultCamera),
+            ("Request Idle Camera", .default, requestNavigationIdleCamera),
+            ("Override camera", .default, overrideViewportDataSourceAndCameraTransition),
             ("Cancel", .cancel, nil)
         ]
         
@@ -338,6 +343,33 @@ class ViewController: UIViewController {
         } else {
             navigationMapView.mapView?.style.styleURL = StyleURL.custom(url: MapboxMaps.Style.navigationNightStyleURL)
         }
+    }
+    
+    func requestNavigationFollowingCamera() {
+        navigationMapView.navigationCamera.requestNavigationCameraToFollowing()
+    }
+    
+    func requestNavigationDefaultCamera() {
+        navigationMapView.navigationCamera.requestNavigationCameraToIdle()
+        if let coordinate = navigationMapView.mapView.locationManager.latestLocation?.coordinate {
+            navigationMapView.mapView.cameraManager.setCamera(to: CameraOptions(center: coordinate, zoom: 13.0, pitch: 0.0),
+                                                              animated: true,
+                                                              completion: nil)
+        }
+    }
+    
+    func requestNavigationIdleCamera() {
+        navigationMapView.navigationCamera.requestNavigationCameraToIdle()
+    }
+    
+    func overrideViewportDataSourceAndCameraTransition() {
+        // let customViewportDataSource = CustomViewportDataSource()
+        let customViewportDataSource = NavigationViewportDataSource(navigationMapView.mapView)
+        customViewportDataSource.defaultAltitude = 300.0
+        navigationMapView.navigationCamera.viewportDataSource = customViewportDataSource
+        
+        let customCameraStateTransition = CustomCameraStateTransition(navigationMapView.mapView)
+        navigationMapView.navigationCamera.cameraStateTransition = customCameraStateTransition
     }
     
     func requestRoute() {
