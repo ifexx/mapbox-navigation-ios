@@ -77,7 +77,7 @@ class ViewController: UIViewController {
     }
     
     private func configure(_ navigationMapView: NavigationMapView) {
-        setupPassiveLocationManager(navigationMapView)
+        setupPassiveLocationManager(navigationMapView.mapView)
         
         navigationMapView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         view.addSubview(navigationMapView)
