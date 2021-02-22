@@ -46,7 +46,7 @@ let package = Package(
         .target(
             name: "CMapboxCoreNavigation",
             dependencies: [
-                "MapboxAccounts",
+                .product(name: "MapboxAccounts", package: "MapboxAccounts"),
             ]),
         .target(
             name: "MapboxNavigation",
