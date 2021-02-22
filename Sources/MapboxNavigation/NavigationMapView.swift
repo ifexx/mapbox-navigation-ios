@@ -262,7 +262,15 @@ open class NavigationMapView: UIView {
             fatalError("Access token was not set.")
         }
         
-        mapView = MapView(with: frame, resourceOptions: ResourceOptions(accessToken: accessToken))
+        var options: ResourceOptions!
+        if Bundle.mapboxNavigationIfInstalled?.ensureSuggestedTileURLExists() ?? false {
+            options = ResourceOptions(accessToken: accessToken,
+                                      tileStorePath: Bundle.mapboxNavigationIfInstalled?.suggestedTileURL?.absoluteString)
+        } else {
+            options = ResourceOptions(accessToken: accessToken)
+        }
+        
+        mapView = MapView(with: frame, resourceOptions: options)
         mapView.translatesAutoresizingMaskIntoConstraints = false
         mapView.update {
             $0.ornaments.showsScale = false

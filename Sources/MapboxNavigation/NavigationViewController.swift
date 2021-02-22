@@ -87,6 +87,11 @@ open class NavigationViewController: UIViewController, NavigationStatusPresenter
     }
     
     /**
+     A manager object, used to init and maintain predictive caching.
+     */
+    private(set) var predictiveCacheManager: PredictiveCacheManager?
+    
+    /**
      The `NavigationMapView` displayed inside the view controller.
      
      - note: Do not change `NavigationMapView.delegate` property; instead, implement the corresponding methods on `NavigationViewControllerDelegate`.
@@ -291,6 +296,7 @@ open class NavigationViewController: UIViewController, NavigationStatusPresenter
         
         addRouteMapViewController(navigationOptions)
         setupStyleManager(navigationOptions)
+        setupPredictiveCaching(navigationOptions)
     }
     
     /**
@@ -322,6 +328,20 @@ open class NavigationViewController: UIViewController, NavigationStatusPresenter
         if let currentStyle = styleManager.currentStyle {
             updateMapStyle(currentStyle)
         }
+    }
+    
+    func setupPredictiveCaching(_ navigationOptions: NavigationOptions?) {
+        guard let predictiveCacheLocationOptions = navigationOptions?.predictiveCacheLocationOptions,
+              let mapView = mapViewController?.navigationMapView.mapView else {
+            return
+        }
+        let mapTileSource = try! TileStoreManager.getTileStore(for: mapView.__map.getResourceOptions())
+        let styleURLs = mapView.__map.getStyleSourceURLs(["raster", "vector"])
+        let mapOptions = PredictiveCacheManager.MapOptions(mapTileSource.value as! TileStore,
+                                                           styleURLs)
+        
+        predictiveCacheManager = PredictiveCacheManager(predictiveCacheLocationOptions: predictiveCacheLocationOptions,
+                                                        mapOptions: mapOptions)
     }
     
     func addRouteMapViewController(_ navigationOptions: NavigationOptions?) {

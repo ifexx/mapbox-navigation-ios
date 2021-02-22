@@ -30,6 +30,9 @@
 		2B72EC5E241276D10003B370 /* RouteVoiceController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B72EC5D241276D10003B370 /* RouteVoiceController.swift */; };
 		2B72EC602412AA800003B370 /* SystemSpeechSynthesizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B72EC5F2412AA800003B370 /* SystemSpeechSynthesizer.swift */; };
 		2B7ACA8225E3B55700B0ACFD /* NavigatorProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B7ACA8125E3B55700B0ACFD /* NavigatorProvider.swift */; };
+		2B7ACA9B25E3F84700B0ACFD /* PredictiveCacheManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B7ACA9925E3F84600B0ACFD /* PredictiveCacheManager.swift */; };
+		2B7ACA9C25E3F84700B0ACFD /* PredictiveCacheLocationOptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B7ACA9A25E3F84600B0ACFD /* PredictiveCacheLocationOptions.swift */; };
+		2B7ACAA625E3F86000B0ACFD /* Map.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B7ACAA525E3F86000B0ACFD /* Map.swift */; };
 		2B8098412411375700FED452 /* SpeechSynthesizing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B8098402411375700FED452 /* SpeechSynthesizing.swift */; };
 		2B8098432411447E00FED452 /* MultiplexedSpeechSynthesizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B8098422411447E00FED452 /* MultiplexedSpeechSynthesizer.swift */; };
 		2B81EC28241A237E00145086 /* SpeechSynthesizersControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B81EC27241A237E00145086 /* SpeechSynthesizersControllerTests.swift */; };
@@ -508,6 +511,9 @@
 		2B72EC5D241276D10003B370 /* RouteVoiceController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RouteVoiceController.swift; sourceTree = "<group>"; };
 		2B72EC5F2412AA800003B370 /* SystemSpeechSynthesizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemSpeechSynthesizer.swift; sourceTree = "<group>"; };
 		2B7ACA8125E3B55700B0ACFD /* NavigatorProvider.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NavigatorProvider.swift; sourceTree = "<group>"; };
+		2B7ACA9925E3F84600B0ACFD /* PredictiveCacheManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PredictiveCacheManager.swift; sourceTree = "<group>"; };
+		2B7ACA9A25E3F84600B0ACFD /* PredictiveCacheLocationOptions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PredictiveCacheLocationOptions.swift; sourceTree = "<group>"; };
+		2B7ACAA525E3F86000B0ACFD /* Map.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Map.swift; sourceTree = "<group>"; };
 		2B8098402411375700FED452 /* SpeechSynthesizing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeechSynthesizing.swift; sourceTree = "<group>"; };
 		2B8098422411447E00FED452 /* MultiplexedSpeechSynthesizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MultiplexedSpeechSynthesizer.swift; sourceTree = "<group>"; };
 		2B81EC27241A237E00145086 /* SpeechSynthesizersControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeechSynthesizersControllerTests.swift; sourceTree = "<group>"; };
@@ -1562,6 +1568,7 @@
 				35BF8CA31F28EBD8003F6125 /* String.swift */,
 				8D24A2F920449B430098CBF8 /* Dictionary.swift */,
 				351BEBDF1E5BCC63006FE110 /* MapView.swift */,
+				2B7ACAA525E3F86000B0ACFD /* Map.swift */,
 				353E3C8E20A3501C00FD1789 /* MapboxMapsStyle.swift */,
 				8D5DFFF0207C04840093765A /* NSAttributedString.swift */,
 				35B7837D1F9547B300291F9A /* Transitioning.swift */,
@@ -1691,6 +1698,8 @@
 				4303A3982332CD6200B5737D /* UnimplementedLogging.swift */,
 				8D1A5CD1212DDFCD0059BA4A /* DispatchTimer.swift */,
 				8D75F990212B5C7F00F99CF3 /* TunnelAuthority.swift */,
+				2B7ACA9A25E3F84600B0ACFD /* PredictiveCacheLocationOptions.swift */,
+				2B7ACA9925E3F84600B0ACFD /* PredictiveCacheManager.swift */,
 				3582A25120EFA9680029C5DE /* RouterDelegate.swift */,
 				C5ADFBFB1DDCC9AD0011824B /* RouteProgress.swift */,
 				2BBEEDA42508DB1700C8DA4A /* RouteLegProgress.swift */,
@@ -2617,6 +2626,7 @@
 				2BE701252535943900F46E4E /* BorderCrossing.swift in Sources */,
 				3582A25020EEC46B0029C5DE /* Router.swift in Sources */,
 				8D75F991212B5C7F00F99CF3 /* TunnelAuthority.swift in Sources */,
+				2B7ACAA625E3F86000B0ACFD /* Map.swift in Sources */,
 				C5E7A31C1F4F6828001CB015 /* NavigationRouteOptions.swift in Sources */,
 				352F464D20EB74C200147886 /* NavigationEventsManager.swift in Sources */,
 				351174F41EF1C0530065E248 /* ReplayLocationManager.swift in Sources */,
@@ -2638,6 +2648,7 @@
 				4303A3992332CD6200B5737D /* UnimplementedLogging.swift in Sources */,
 				3A163AE3249901D000D66A0D /* FixLocation.swift in Sources */,
 				8D2AA745211CDD4000EB7F72 /* NavigationService.swift in Sources */,
+				2B7ACA9C25E3F84700B0ACFD /* PredictiveCacheLocationOptions.swift in Sources */,
 				35A5413B1EFC052700E49846 /* RouteOptions.swift in Sources */,
 				353E69041EF0C4E5007B2AE5 /* SimulatedLocationManager.swift in Sources */,
 				DAFA92071F01735000A7FB09 /* DistanceFormatter.swift in Sources */,
@@ -2650,6 +2661,7 @@
 				64847A041F04629D003F3A69 /* Feedback.swift in Sources */,
 				2BE7016925371E3400F46E4E /* Incident.swift in Sources */,
 				C58D6BAD1DDCF2AE00387F53 /* CoreConstants.swift in Sources */,
+				2B7ACA9B25E3F84700B0ACFD /* PredictiveCacheManager.swift in Sources */,
 				35C77F621FE8219900338416 /* NavigationSettings.swift in Sources */,
 				C51DF8661F38C31C006C6A15 /* Locale.swift in Sources */,
 			);
