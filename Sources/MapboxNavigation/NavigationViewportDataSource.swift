@@ -1,3 +1,4 @@
+import UIKit
 import MapboxMaps
 import MapboxCoreNavigation
 
@@ -63,6 +64,11 @@ public class NavigationViewportDataSource: ViewportDataSource {
                                                name: .passiveLocationDataSourceDidUpdate,
                                                object: nil)
         
+        NotificationCenter.default.addObserver(self,
+                                               selector: #selector(orientationDidChange),
+                                               name: UIDevice.orientationDidChangeNotification,
+                                               object: nil)
+        
         // TODO: Subscribe for .routeControllerDidPassSpokenInstructionPoint to be able to control
         // change camera in case when building highlighting is required.
     }
@@ -79,23 +85,57 @@ public class NavigationViewportDataSource: ViewportDataSource {
         NotificationCenter.default.removeObserver(self,
                                                   name: .passiveLocationDataSourceDidUpdate,
                                                   object: nil)
+        
+        NotificationCenter.default.removeObserver(self,
+                                                  name: UIDevice.orientationDidChangeNotification,
+                                                  object: nil)
     }
     
     @objc func progressDidChange(_ notification: NSNotification) {
         let activeLocation = notification.userInfo?[RouteController.NotificationUserInfoKey.locationKey] as? CLLocation
         let routeProgress = notification.userInfo?[RouteController.NotificationUserInfoKey.routeProgressKey] as? RouteProgress
         let passiveLocation = notification.userInfo?[PassiveLocationDataSource.NotificationUserInfoKey.locationKey] as? CLLocation
-        
-        NSLog("[NavigationViewportDataSource]: Passive location: \(passiveLocation), Active location: \(activeLocation), Route progress: \(routeProgress)")
-
-        let cameraOptions = self.cameraOptions(passiveLocation ?? activeLocation, routeProgress: routeProgress)
+        let cameraOptions = self.cameraOptions(passiveLocation, activeLocation: activeLocation, routeProgress: routeProgress)
         delegate?.viewportDataSource(self, didUpdate: cameraOptions)
     }
     
-    func cameraOptions(_ location: CLLocation?, routeProgress: RouteProgress?) -> [String: CameraOptions] {
+    @objc func orientationDidChange() {
+        if UIDevice.current.orientation.isPortrait {
+            followingMobileCamera.padding = UIEdgeInsets(top: 300.0, left: 0.0, bottom: 0.0, right: 0.0)
+        } else {
+            followingMobileCamera.padding = UIEdgeInsets(top: 0.0, left: 0.0, bottom: 0.0, right: 0.0)
+        }
+        
+        let cameraOptions = [
+            NavigationViewportDataSource.followingMobileCameraKey: followingMobileCamera,
+        ]
+        delegate?.viewportDataSource(self, didUpdate: cameraOptions)
+    }
+    
+    func cameraOptions(_ passiveLocation: CLLocation?, activeLocation: CLLocation?, routeProgress: RouteProgress?) -> [String: CameraOptions] {
+        updateFollowingCamera(passiveLocation, activeLocation: activeLocation, routeProgress: routeProgress)
+        updateOverviewCamera(passiveLocation, activeLocation: activeLocation, routeProgress: routeProgress)
+        
+        let cameraOptions = [
+            NavigationViewportDataSource.followingMobileCameraKey: followingMobileCamera,
+            NavigationViewportDataSource.overviewMobileCameraKey: overviewMobileCamera,
+            NavigationViewportDataSource.followingHeadUnitCameraKey: followingHeadUnitCamera,
+            NavigationViewportDataSource.overviewHeadUnitCameraKey: overviewHeadUnitCamera
+        ]
+        
+        return cameraOptions
+    }
+    
+    func updateFollowingCamera(_ passiveLocation: CLLocation?, activeLocation: CLLocation?, routeProgress: RouteProgress?) {
+        let location = passiveLocation ?? activeLocation
         followingMobileCamera.center = location?.coordinate
         followingMobileCamera.bearing = location?.course
-        followingMobileCamera.padding = UIEdgeInsets(top: 300.0, left: 0.0, bottom: 0.0, right: 0.0)
+        // TODO: Change top padding depending on top banner height.
+        if UIDevice.current.orientation.isPortrait {
+            followingMobileCamera.padding = UIEdgeInsets(top: 300.0, left: 0.0, bottom: 0.0, right: 0.0)
+        } else {
+            followingMobileCamera.padding = UIEdgeInsets(top: 0.0, left: 0.0, bottom: 0.0, right: 0.0)
+        }
         
         if let latitude = location?.coordinate.latitude, let size = mapView?.bounds.size {
             followingMobileCamera.zoom = CGFloat(ZoomLevelForAltitude(defaultAltitude,
@@ -108,7 +148,13 @@ public class NavigationViewportDataSource: ViewportDataSource {
         
         followingHeadUnitCamera.center = location?.coordinate
         followingHeadUnitCamera.bearing = location?.course
-        followingHeadUnitCamera.padding = UIEdgeInsets(top: 0.0, left: 100.0, bottom: 0.0, right: 0.0)
+        
+        var padding = UIEdgeInsets(top: 0.0, left: 100.0, bottom: 0.0, right: 0.0)
+        if passiveLocation != nil {
+           padding = UIEdgeInsets(top: 0.0, left: 0.0, bottom: 0.0, right: 0.0)
+        }
+        followingHeadUnitCamera.padding = padding
+        
         if let latitude = location?.coordinate.latitude, let size = mapView?.bounds.size {
             followingHeadUnitCamera.zoom = CGFloat(ZoomLevelForAltitude(500.0,
                                                                         CGFloat(defaultPitch),
@@ -116,15 +162,11 @@ public class NavigationViewportDataSource: ViewportDataSource {
                                                                         size))
         }
         
-        if let latitude = location?.coordinate.latitude, let size = mapView?.bounds.size {
-            followingMobileCamera.zoom = CGFloat(ZoomLevelForAltitude(defaultAltitude,
-                                                                      CGFloat(defaultPitch),
-                                                                      latitude,
-                                                                      size))
-        }
-        
-        followingMobileCamera.pitch = CGFloat(defaultPitch)
-        
+        followingHeadUnitCamera.pitch = CGFloat(defaultPitch)
+    }
+    
+    func updateOverviewCamera(_ passiveLocation: CLLocation?, activeLocation: CLLocation?, routeProgress: RouteProgress?) {
+        let location = passiveLocation ?? activeLocation
         if let lineString = routeProgress?.route.shape,
            let cameraOptions = mapView?.cameraManager.camera(fitting: .lineString(lineString)) {
             overviewMobileCamera = cameraOptions
@@ -136,15 +178,6 @@ public class NavigationViewportDataSource: ViewportDataSource {
         overviewHeadUnitCamera.padding = UIEdgeInsets(top: 0.0, left: 0.0, bottom: 0.0, right: 0.0)
         overviewHeadUnitCamera.zoom = 10.0
         overviewHeadUnitCamera.pitch = 0.0
-        
-        let cameraOptions = [
-            NavigationViewportDataSource.followingMobileCameraKey: followingMobileCamera,
-            NavigationViewportDataSource.overviewMobileCameraKey: overviewMobileCamera,
-            NavigationViewportDataSource.followingHeadUnitCameraKey: followingHeadUnitCamera,
-            NavigationViewportDataSource.overviewHeadUnitCameraKey: overviewHeadUnitCamera
-        ]
-        
-        return cameraOptions
     }
     
     @objc func didReroute(_ notification: NSNotification) {
