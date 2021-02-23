@@ -18,7 +18,8 @@ class ViewController: UIViewController {
     
     var trackStyledFeature: StyledFeature!
     var rawTrackStyledFeature: StyledFeature!
-    let passiveLocationDataSource = PassiveLocationDataSource()
+    // let passiveLocationDataSource: PassiveLocationDataSource? = nil
+    let passiveLocationDataSource: PassiveLocationDataSource? = PassiveLocationDataSource()
     
     typealias RouteRequestSuccess = ((RouteResponse) -> Void)
     typealias RouteRequestFailure = ((Error) -> Void)
@@ -68,12 +69,19 @@ class ViewController: UIViewController {
         if navigationMapView == nil {
             navigationMapView = NavigationMapView(frame: view.bounds)
         }
+        passiveLocationDataSource?.systemLocationManager.startUpdatingLocation()
     }
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
 
         requestNotificationCenterAuthorization()
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        
+        passiveLocationDataSource?.systemLocationManager.stopUpdatingLocation()
     }
     
     private func configure(_ navigationMapView: NavigationMapView) {
@@ -85,15 +93,6 @@ class ViewController: UIViewController {
         navigationMapView.delegate = self
         navigationMapView.mapView.update {
             $0.location.showUserLocation = true
-        }
-        
-        // TODO: Provide a reliable way of setting camera to current coordinate.
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-            if let coordinate = navigationMapView.mapView.locationManager.latestLocation?.coordinate {
-                navigationMapView.mapView.cameraManager.setCamera(to: CameraOptions(center: coordinate, zoom: 13),
-                                                                  animated: true,
-                                                                  completion: nil)
-            }
         }
         
         setupGestureRecognizers()
@@ -223,8 +222,6 @@ class ViewController: UIViewController {
         navigationViewController.floatingButtonsPosition = .topTrailing
         
         present(navigationViewController, completion: nil)
-        
-        passiveLocationDataSource.systemLocationManager.stopUpdatingLocation()
     }
     
     func startCustomNavigation() {
@@ -250,8 +247,6 @@ class ViewController: UIViewController {
         navigationViewController.delegate = self
 
         presentAndRemoveMapview(navigationViewController, completion: beginCarPlayNavigation)
-        
-        passiveLocationDataSource.systemLocationManager.stopUpdatingLocation()
     }
     
     func startGuidanceCardsNavigation() {
@@ -313,14 +308,12 @@ class ViewController: UIViewController {
         
         let toggleDayNightStyle: ActionHandler = { _ in self.toggleDayNightStyle() }
         let requestNavigationFollowingCamera: ActionHandler = { _ in self.requestNavigationFollowingCamera() }
-        let requestNavigationDefaultCamera: ActionHandler = { _ in self.requestNavigationDefaultCamera() }
         let requestNavigationIdleCamera: ActionHandler = { _ in self.requestNavigationIdleCamera() }
         let overrideViewportDataSourceAndCameraTransition: ActionHandler = { _ in self.overrideViewportDataSourceAndCameraTransition() }
         
         let actions: [(String, UIAlertAction.Style, ActionHandler?)] = [
             ("Toggle Day/Night Style", .default, toggleDayNightStyle),
             ("Request Following Camera", .default, requestNavigationFollowingCamera),
-            ("Request Default Camera", .default, requestNavigationDefaultCamera),
             ("Request Idle Camera", .default, requestNavigationIdleCamera),
             ("Override camera", .default, overrideViewportDataSourceAndCameraTransition),
             ("Cancel", .cancel, nil)
@@ -349,23 +342,14 @@ class ViewController: UIViewController {
         navigationMapView.navigationCamera.requestNavigationCameraToFollowing()
     }
     
-    func requestNavigationDefaultCamera() {
-        navigationMapView.navigationCamera.requestNavigationCameraToIdle()
-        if let coordinate = navigationMapView.mapView.locationManager.latestLocation?.coordinate {
-            navigationMapView.mapView.cameraManager.setCamera(to: CameraOptions(center: coordinate, zoom: 13.0, pitch: 0.0),
-                                                              animated: true,
-                                                              completion: nil)
-        }
-    }
-    
     func requestNavigationIdleCamera() {
         navigationMapView.navigationCamera.requestNavigationCameraToIdle()
     }
     
     func overrideViewportDataSourceAndCameraTransition() {
-        // let customViewportDataSource = CustomViewportDataSource()
-        let customViewportDataSource = NavigationViewportDataSource(navigationMapView.mapView)
-        customViewportDataSource.defaultAltitude = 300.0
+        let customViewportDataSource = CustomViewportDataSource(navigationMapView.mapView)
+        // let customViewportDataSource = NavigationViewportDataSource(navigationMapView.mapView)
+        // customViewportDataSource.defaultAltitude = 300.0
         navigationMapView.navigationCamera.viewportDataSource = customViewportDataSource
         
         let customCameraStateTransition = CustomCameraStateTransition(navigationMapView.mapView)

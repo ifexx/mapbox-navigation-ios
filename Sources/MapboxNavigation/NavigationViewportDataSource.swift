@@ -17,16 +17,19 @@ public class NavigationViewportDataSource: ViewportDataSource {
     /**
      Returns the altitude that the `NavigationCamera` initally defaults to.
      */
+    // TODO: On CarPlay `defaultAltitude` should be set to 500.
     public var defaultAltitude: CLLocationDistance = 1000.0
     
     /**
      Returns the altitude the map conditionally zooms out to when user is on a motorway, and the maneuver length is sufficently long.
      */
+    // TODO: Implement ability to handle `zoomedOutMotorwayAltitude` on iOS (2000 meters) and CarPlay (1000 meters).
     public var zoomedOutMotorwayAltitude: CLLocationDistance = 2000.0
     
     /**
      Returns the threshold for what the map considers a "long-enough" maneuver distance to trigger a zoom-out when the user enters a motorway.
      */
+    // TODO: On CarPlay `longManeuverDistance` should be set to 500.
     public var longManeuverDistance: CLLocationDistance = 1000.0
     
     /**
@@ -128,14 +131,24 @@ public class NavigationViewportDataSource: ViewportDataSource {
     
     func updateFollowingCamera(_ passiveLocation: CLLocation?, activeLocation: CLLocation?, routeProgress: RouteProgress?) {
         let location = passiveLocation ?? activeLocation
-        followingMobileCamera.center = location?.coordinate
-        followingMobileCamera.bearing = location?.course
-        // TODO: Change top padding depending on top banner height.
-        if UIDevice.current.orientation.isPortrait {
-            followingMobileCamera.padding = UIEdgeInsets(top: 300.0, left: 0.0, bottom: 0.0, right: 0.0)
-        } else {
-            followingMobileCamera.padding = UIEdgeInsets(top: 0.0, left: 0.0, bottom: 0.0, right: 0.0)
+        var mobileBearing = location?.course
+        var mobilePitch = CGFloat(defaultPitch)
+        var mobilePadding = UIEdgeInsets(top: 300.0, left: 0.0, bottom: 0.0, right: 0.0)
+        if passiveLocation != nil {
+            mobileBearing = 0.0
+            mobilePitch = 0.0
+            mobilePadding = UIEdgeInsets(top: 0.0, left: 0.0, bottom: 0.0, right: 0.0)
         }
+        
+        // TODO: Change top padding depending on top banner height.
+        if UIDevice.current.orientation.isLandscape {
+            mobilePadding = UIEdgeInsets(top: 0.0, left: 0.0, bottom: 0.0, right: 0.0)
+        }
+        
+        followingMobileCamera.center = location?.coordinate
+        followingMobileCamera.bearing = mobileBearing
+        followingMobileCamera.pitch = mobilePitch
+        followingMobileCamera.padding = mobilePadding
         
         if let latitude = location?.coordinate.latitude, let size = mapView?.bounds.size {
             followingMobileCamera.zoom = CGFloat(ZoomLevelForAltitude(defaultAltitude,
@@ -144,16 +157,18 @@ public class NavigationViewportDataSource: ViewportDataSource {
                                                                       size))
         }
         
-        followingMobileCamera.pitch = CGFloat(defaultPitch)
+        var headUnitPadding = UIEdgeInsets(top: 0.0, left: 100.0, bottom: 0.0, right: 0.0)
+        var headUnitBearing = location?.course
+        var headUnitPitch = CGFloat(0.0)
+        if passiveLocation != nil {
+            headUnitBearing = 0.0
+            headUnitPitch = 0.0
+            headUnitPadding = UIEdgeInsets(top: 0.0, left: 0.0, bottom: 0.0, right: 0.0)
+        }
         
         followingHeadUnitCamera.center = location?.coordinate
-        followingHeadUnitCamera.bearing = location?.course
-        
-        var padding = UIEdgeInsets(top: 0.0, left: 100.0, bottom: 0.0, right: 0.0)
-        if passiveLocation != nil {
-           padding = UIEdgeInsets(top: 0.0, left: 0.0, bottom: 0.0, right: 0.0)
-        }
-        followingHeadUnitCamera.padding = padding
+        followingHeadUnitCamera.bearing = headUnitBearing
+        followingHeadUnitCamera.padding = headUnitPadding
         
         if let latitude = location?.coordinate.latitude, let size = mapView?.bounds.size {
             followingHeadUnitCamera.zoom = CGFloat(ZoomLevelForAltitude(500.0,
@@ -162,7 +177,7 @@ public class NavigationViewportDataSource: ViewportDataSource {
                                                                         size))
         }
         
-        followingHeadUnitCamera.pitch = CGFloat(defaultPitch)
+        followingHeadUnitCamera.pitch = headUnitPitch
     }
     
     func updateOverviewCamera(_ passiveLocation: CLLocation?, activeLocation: CLLocation?, routeProgress: RouteProgress?) {

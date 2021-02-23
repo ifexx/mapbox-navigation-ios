@@ -227,6 +227,7 @@ open class NavigationMapView: UIView {
         mapView.pinTo(parentView: self)
         
         navigationCamera = NavigationCamera(mapView, navigationCameraType: navigationCameraType)
+        navigationCamera.requestNavigationCameraToFollowing()
     }
     
     @objc func navigationCameraStateDidChange(_ notification: Notification) {

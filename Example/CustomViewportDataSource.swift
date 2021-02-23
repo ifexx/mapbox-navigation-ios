@@ -16,7 +16,12 @@ class CustomViewportDataSource: ViewportDataSource {
     
     var previousLocation: CLLocation?
     
-    init() {
+    weak var mapView: MapView?
+    
+    public required init(_ mapView: MapView) {
+        self.mapView = mapView
+        self.mapView?.locationManager.addLocationConsumer(newConsumer: self)
+        
         subscribeForNotifications()
     }
     
@@ -56,11 +61,11 @@ class CustomViewportDataSource: ViewportDataSource {
         delegate?.viewportDataSource(self, didUpdate: cameraOptions)
     }
     
-    func cameraOptions(_ location: CLLocation?, routeProgress: RouteProgress?) -> [String: CameraOptions] {
+    func cameraOptions(_ location: CLLocation?, routeProgress: RouteProgress? = nil) -> [String: CameraOptions] {
         followingMobileCamera.center = location?.coordinate
         followingMobileCamera.bearing = location?.course
         followingMobileCamera.padding = UIEdgeInsets(top: 0.0, left: 0.0, bottom: 0.0, right: 0.0)
-        followingMobileCamera.zoom = 13.0
+        followingMobileCamera.zoom = 14.0
         followingMobileCamera.pitch = 0.0
         
         overviewMobileCamera.center = location?.coordinate
@@ -77,5 +82,22 @@ class CustomViewportDataSource: ViewportDataSource {
         ]
         
         return cameraOptions
+    }
+}
+
+extension CustomViewportDataSource: LocationConsumer {
+    
+    var shouldTrackLocation: Bool {
+        get {
+            return true
+        }
+        set(newValue) {
+            self.shouldTrackLocation = newValue
+        }
+    }
+
+    func locationUpdate(newLocation: Location) {
+        let cameraOptions = self.cameraOptions(newLocation.internalLocation)
+        delegate?.viewportDataSource(self, didUpdate: cameraOptions)
     }
 }
