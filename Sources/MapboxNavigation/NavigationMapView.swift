@@ -79,6 +79,7 @@ open class NavigationMapView: UIView {
         static let waypointSource = "\(identifier)_waypointSource"
         static let waypointCircle = "\(identifier)_waypointCircle"
         static let waypointSymbol = "\(identifier)_waypointSymbol"
+        static let buildingExtrusionLayer = "\(identifier)buildingExtrusionLayer"
     }
     
     @objc dynamic public var trafficUnknownColor: UIColor = .trafficUnknown
@@ -130,6 +131,9 @@ open class NavigationMapView: UIView {
     var preFractionTraveled: Double = 0.0
     var vanishingRouteLineUpdateTimer: Timer? = nil
     
+    var foundBuildingIds = Set<Double>()
+    var handleAsyncTime: Double = 0.03
+
     var shouldPositionCourseViewFrameByFrame = false {
         didSet {
             if shouldPositionCourseViewFrameByFrame {
