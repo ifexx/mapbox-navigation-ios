@@ -206,7 +206,6 @@
 		5A39B9282498F9890026DFD1 /* PassiveLocationDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A39B9272498F9890026DFD1 /* PassiveLocationDataSource.swift */; };
 		5A3D212E24DADFA000EA652A /* SkuTokenProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A3D212D24DADF9F00EA652A /* SkuTokenProvider.swift */; };
 		5A43FC8B24B488DC00BF7943 /* PassiveLocationDataSourceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A43FC8A24B488DC00BF7943 /* PassiveLocationDataSourceTests.swift */; };
-		5A8DB89424DE0ED70041F863 /* MBXPeerWrapper.h in Headers */ = {isa = PBXBuildFile; fileRef = 5A8DB89224DE0E4E0041F863 /* MBXPeerWrapper.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		5A8DB89624DE16A10041F863 /* SkuTokenProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A8DB89524DE16A10041F863 /* SkuTokenProviderTests.swift */; };
 		6441B16A1EFC64E50076499F /* WaypointConfirmationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6441B1691EFC64E50076499F /* WaypointConfirmationViewController.swift */; };
 		64847A041F04629D003F3A69 /* Feedback.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64847A031F04629D003F3A69 /* Feedback.swift */; };
@@ -357,7 +356,6 @@
 		DAA96D18215A961D00BEF703 /* route-doubling-back.json in Resources */ = {isa = PBXBuildFile; fileRef = DAA96D17215A961D00BEF703 /* route-doubling-back.json */; };
 		DAAE5F301EAE4C4700832871 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = DAAE5F321EAE4C4700832871 /* Localizable.strings */; };
 		DABA591525E58D5600D0C1DB /* Accounts.swift in Sources */ = {isa = PBXBuildFile; fileRef = DABA591425E58D5600D0C1DB /* Accounts.swift */; };
-		DABA592F25E5929D00D0C1DB /* MBXPeerWrapper.m in Sources */ = {isa = PBXBuildFile; fileRef = DABA592E25E5929D00D0C1DB /* MBXPeerWrapper.m */; };
 		DAD17202214DB12B009C8161 /* CPMapTemplateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DAD17201214DB12B009C8161 /* CPMapTemplateTests.swift */; };
 		DAD903AF23E3DCC80057CF1F /* DateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DAD903AE23E3DCC80057CF1F /* DateTests.swift */; };
 		DADD82802161EC0300B8B47D /* UIViewAnimationOptionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DADD827F2161EC0300B8B47D /* UIViewAnimationOptionsTests.swift */; };
@@ -704,7 +702,6 @@
 		5A39B9272498F9890026DFD1 /* PassiveLocationDataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PassiveLocationDataSource.swift; sourceTree = "<group>"; };
 		5A3D212D24DADF9F00EA652A /* SkuTokenProvider.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SkuTokenProvider.swift; sourceTree = "<group>"; };
 		5A43FC8A24B488DC00BF7943 /* PassiveLocationDataSourceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PassiveLocationDataSourceTests.swift; sourceTree = "<group>"; };
-		5A8DB89224DE0E4E0041F863 /* MBXPeerWrapper.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = MBXPeerWrapper.h; path = include/MBXPeerWrapper.h; sourceTree = "<group>"; };
 		5A8DB89524DE16A10041F863 /* SkuTokenProviderTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SkuTokenProviderTests.swift; sourceTree = "<group>"; };
 		6441B1691EFC64E50076499F /* WaypointConfirmationViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = WaypointConfirmationViewController.swift; path = Example/WaypointConfirmationViewController.swift; sourceTree = "<group>"; };
 		64847A031F04629D003F3A69 /* Feedback.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Feedback.swift; sourceTree = "<group>"; };
@@ -879,7 +876,6 @@
 		DA3525712011435E0048DDFC /* da */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = da; path = da.lproj/Main.strings; sourceTree = "<group>"; };
 		DA352572201143BA0048DDFC /* da */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = da; path = da.lproj/Navigation.strings; sourceTree = "<group>"; };
 		DA352573201143D30048DDFC /* da */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = da; path = da.lproj/Localizable.strings; sourceTree = "<group>"; };
-		DA3904AA25C3858A00AB1576 /* CMapboxCoreNavigation.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CMapboxCoreNavigation.h; sourceTree = "<group>"; };
 		DA443DDD2278C90E00ED1307 /* CPTrip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CPTrip.swift; sourceTree = "<group>"; };
 		DA545ABA1FA993DF0090908E /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Main.strings; sourceTree = "<group>"; };
 		DA545ABC1FA9941F0090908E /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Localizable.strings; sourceTree = "<group>"; };
@@ -931,7 +927,6 @@
 		DAAE5F311EAE4C4700832871 /* Base */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = Base; path = Base.lproj/Localizable.strings; sourceTree = "<group>"; };
 		DAAE5F331EAE4C5A00832871 /* zh-Hans */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Localizable.strings"; sourceTree = "<group>"; };
 		DABA591425E58D5600D0C1DB /* Accounts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Accounts.swift; sourceTree = "<group>"; };
-		DABA592E25E5929D00D0C1DB /* MBXPeerWrapper.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MBXPeerWrapper.m; sourceTree = "<group>"; };
 		DAC049BE201715D5004C2217 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/Localizable.strings; sourceTree = "<group>"; };
 		DAC049BF201715EA004C2217 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; name = ru; path = Resources/ru.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
 		DAC049C020171886004C2217 /* he */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = he; path = he.lproj/Main.strings; sourceTree = "<group>"; };
@@ -1636,7 +1631,6 @@
 				8DF8E4DD2202694100B29FEF /* Documents */,
 				35B711DB1E5E7B70001EDA8D /* Example */,
 				DA1A1AFC25E085D40097BBD7 /*  */,
-				DA5C24DC25C35097005487F2 /* CMapboxCoreNavigation */,
 				C5ADFBCB1DDCC7840011824B /* MapboxCoreNavigation */,
 				351BEBD81E5BCC28006FE110 /* MapboxNavigation */,
 				C5ADFBD61DDCC7840011824B /* MapboxCoreNavigationTests */,
@@ -1730,17 +1724,6 @@
 			path = Tests/MapboxCoreNavigationTests;
 			sourceTree = "<group>";
 		};
-		DA5C24DC25C35097005487F2 /* CMapboxCoreNavigation */ = {
-			isa = PBXGroup;
-			children = (
-				DA3904AA25C3858A00AB1576 /* CMapboxCoreNavigation.h */,
-				5A8DB89224DE0E4E0041F863 /* MBXPeerWrapper.h */,
-				DABA592E25E5929D00D0C1DB /* MBXPeerWrapper.m */,
-			);
-			name = CMapboxCoreNavigation;
-			path = Sources/CMapboxCoreNavigation;
-			sourceTree = "<group>";
-		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
@@ -1766,7 +1749,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				C5C94C1B1DDCD22B0097296A /* MapboxCoreNavigation.h in Headers */,
-				5A8DB89424DE0ED70041F863 /* MBXPeerWrapper.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2639,7 +2621,6 @@
 				5A39B9282498F9890026DFD1 /* PassiveLocationDataSource.swift in Sources */,
 				C5C94C1D1DDCD2370097296A /* RouteProgress.swift in Sources */,
 				2BE701352535948100F46E4E /* RestStop.swift in Sources */,
-				DABA592F25E5929D00D0C1DB /* MBXPeerWrapper.m in Sources */,
 				8D4CF9C621349FFB009C3FEE /* NavigationServiceDelegate.swift in Sources */,
 				C5CFE4881EF2FD4C006F48E8 /* MMEEventsManager.swift in Sources */,
 				C578DA081EFD0FFF0052079F /* ProcessInfo.swift in Sources */,
