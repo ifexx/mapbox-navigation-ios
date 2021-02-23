@@ -149,7 +149,6 @@ public class NavigationCamera: NSObject, ViewportDataSourceDelegate {
         for gestureRecognizer in mapView?.gestureRecognizers ?? []
         where gestureRecognizer is UIPanGestureRecognizer || gestureRecognizer is UIRotationGestureRecognizer {
             gestureRecognizer.addTarget(self, action: #selector(requestNavigationCameraToIdle))
-            break
         }
     }
 }
