@@ -605,10 +605,9 @@ extension NavigationViewController: NavigationServiceDelegate {
         let shouldPrevent = navigationService.delegate?.navigationService(navigationService, shouldPreventReroutesWhenArrivingAt: destination) ?? RouteController.DefaultBehavior.shouldPreventReroutesWhenArrivingAtWaypoint
         let userHasArrivedAndShouldPreventRerouting = shouldPrevent && !progress.currentLegProgress.userHasArrivedAtWaypoint
         
-        if snapsUserLocationAnnotationToRoute,
-            userHasArrivedAndShouldPreventRerouting {
+        if snapsUserLocationAnnotationToRoute, userHasArrivedAndShouldPreventRerouting {
             mapViewController?.labelCurrentRoad(at: rawLocation, for: location)
-            mapViewController?.navigationMapView.updateCourseTracking(location: location, animated: true)
+            mapViewController?.navigationMapView.updateUserCourseView(location, animated: true)
         } else  {
             mapViewController?.labelCurrentRoad(at: rawLocation)
         }

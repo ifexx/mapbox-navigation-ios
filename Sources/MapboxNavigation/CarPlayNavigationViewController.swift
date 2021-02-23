@@ -234,14 +234,9 @@ public class CarPlayNavigationViewController: UIViewController, NavigationCamera
     public func showFeedback() {
         carInterfaceController.pushTemplate(self.carFeedbackTemplate, animated: true)
     }
-
-    // Tracks if tracksUserCourse was set to false from overview button or panned away.
-    var isPanningAway = false
     
     public func beginPanGesture() {
-        isPanningAway = true
         navigationMapView?.enableFrameByFrameCourseViewTracking(for: 1)
-        isPanningAway = false
     }
     
     @objc func visualInstructionDidChange(_ notification: NSNotification) {

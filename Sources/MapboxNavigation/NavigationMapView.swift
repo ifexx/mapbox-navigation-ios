@@ -103,7 +103,10 @@ open class NavigationMapView: UIView {
      */
     public weak var delegate: NavigationMapViewDelegate?
     
-    var userLocationForCourseTracking: CLLocation?
+    /**
+     Most recent user location, which is used to place `UserCourseView`.
+     */
+    var mostRecentUserCourseViewLocation: CLLocation?
     var routes: [Route]?
     var routePoints: RoutePoints?
     var routeLineGranularDistances: RouteLineGranularDistances?
@@ -182,6 +185,22 @@ open class NavigationMapView: UIView {
         makeGestureRecognizersUpdateCourseView()
         setupGestureRecognizers()
         installUserCourseView()
+        subscribeForNotifications()
+    }
+    
+    deinit {
+        unsubscribeFromNotifications()
+    }
+    
+    func subscribeForNotifications() {
+        NotificationCenter.default.addObserver(self,
+                                               selector: #selector(navigationCameraStateDidChange(_ :)),
+                                               name: .navigationCameraStateDidChange,
+                                               object: nil)
+    }
+    
+    func unsubscribeFromNotifications() {
+        NotificationCenter.default.removeObserver(self, name: .navigationCameraStateDidChange, object: nil)
     }
     
     func setupMapView(_ frame: CGRect, navigationCameraType: NavigationCameraType = .mobile) {
@@ -198,7 +217,7 @@ open class NavigationMapView: UIView {
         mapView.on(.renderFrameFinished) { [weak self] _ in
             guard let self = self,
                   self.shouldPositionCourseViewFrameByFrame,
-                  let location = self.userLocationForCourseTracking else { return }
+                  let location = self.mostRecentUserCourseViewLocation else { return }
             
             self.userCourseView.center = self.mapView.screenCoordinate(for: location.coordinate).point
         }
@@ -208,6 +227,19 @@ open class NavigationMapView: UIView {
         mapView.pinTo(parentView: self)
         
         navigationCamera = NavigationCamera(mapView, navigationCameraType: navigationCameraType)
+    }
+    
+    @objc func navigationCameraStateDidChange(_ notification: Notification) {
+        if let navigationCameraState = notification.userInfo?[NavigationCamera.navigationCameraStateDidChangeKey] as? NavigationCameraState,
+           let location = mostRecentUserCourseViewLocation {
+            switch navigationCameraState {
+            case .idle:
+                break
+            case .transitionToFollowing, .following, .transitionToOverview, .overview:
+                updateUserCourseView(location)
+                break
+            }
+        }
     }
     
     func setupGestureRecognizers() {
@@ -239,10 +271,11 @@ open class NavigationMapView: UIView {
     open override func layoutSubviews() {
         super.layoutSubviews()
         
-        // If the map is in tracking mode, make sure we update the camera and anchor after the layout pass.
-        if navigationCamera.navigationCameraState == .following ||
-            navigationCamera.navigationCameraState == .transitionToFollowing {
-            updateCourseTracking(location: userLocationForCourseTracking, animated: false)
+        // If the `NavigationCamera` is in `.following` or `.transitionToFollowing` mode,
+        // make sure to update `UserCourseView`.
+        let states = [NavigationCameraState.following, NavigationCameraState.transitionToFollowing]
+        if states.contains(navigationCamera.navigationCameraState), let location = mostRecentUserCourseViewLocation {
+            updateUserCourseView(location)
         }
     }
     
@@ -291,33 +324,34 @@ open class NavigationMapView: UIView {
         mapView.addSubview(userCourseView)
     }
     
-    public func updateCourseTracking(location: CLLocation?, animated: Bool = false) {
-        userLocationForCourseTracking = location
+    /**
+     Updates `UserCourseView` to provided location.
+     */
+    public func updateUserCourseView(_ location: CLLocation, animated: Bool = false) {
+        guard CLLocationCoordinate2DIsValid(location.coordinate) else { return }
         
-        // While animating to overview mode, don't animate the puck.
-        let duration: TimeInterval = animated && navigationCamera.navigationCameraState != .transitionToOverview ? 1 : 0
-        guard let location = location, CLLocationCoordinate2DIsValid(location.coordinate) else {
-            return
-        }
+        mostRecentUserCourseViewLocation = location
         
-        let centerUserCourseView = { [weak self] in
-            guard let point = self?.mapView.screenCoordinate(for: location.coordinate).point else { return }
-            
-            self?.userCourseView.center = point
-        }
-
         if userCourseView.isHidden {
             userCourseView.isHidden = false
         }
         
+        let centerUserCourseView = { [weak self] in
+            guard let point = self?.mapView.screenCoordinate(for: location.coordinate).point else { return }
+            self?.userCourseView.center = point
+        }
+        
+        // While animating to overview mode, don't animate the puck.
+        let duration: TimeInterval = animated && navigationCamera.navigationCameraState != .transitionToOverview ? 1 : 0
         UIView.animate(withDuration: duration, delay: 0, options: [.curveLinear], animations: centerUserCourseView)
         
         userCourseView.update(location: location,
                               pitch: mapView.cameraView.pitch,
                               direction: mapView.bearing,
                               animated: animated,
-                              tracksUserCourse: navigationCamera.navigationCameraState == .following ||
-                                navigationCamera.navigationCameraState == .transitionToFollowing)
+                              navigationCameraState: navigationCamera.navigationCameraState)
+        
+        userCourseView.center = mapView.screenCoordinate(for: location.coordinate).point
     }
     
     // MARK: Feature Addition/removal properties and methods
@@ -900,6 +934,12 @@ open class NavigationMapView: UIView {
         return candidates
     }
     
+    func makeGestureRecognizersUpdateCourseView() {
+        for gestureRecognizer in mapView.gestureRecognizers ?? [] {
+            gestureRecognizer.addTarget(self, action: #selector(updateCourseView(_:)))
+        }
+    }
+    
     @objc func updateCourseView(_ sender: UIGestureRecognizer) {
         if let panGesture = sender as? UIPanGestureRecognizer,
            sender.state == .ended || sender.state == .cancelled {
@@ -911,28 +951,8 @@ open class NavigationMapView: UIView {
         }
         
         if sender.state == .changed {
-            guard let location = userLocationForCourseTracking else { return }
-            updateCourseView(to: location)
+            guard let location = mostRecentUserCourseViewLocation else { return }
+            updateUserCourseView(location)
         }
-    }
-    
-    // MARK: - Utility methods
-    
-    func makeGestureRecognizersUpdateCourseView() {
-        for gestureRecognizer in mapView.gestureRecognizers ?? [] {
-            gestureRecognizer.addTarget(self, action: #selector(updateCourseView(_:)))
-        }
-    }
-    
-    private func updateCourseView(to location: CLLocation, pitch: CGFloat? = nil, direction: CLLocationDirection? = nil, animated: Bool = false) {
-        let tracksUserCourse = navigationCamera.navigationCameraState == .following ||
-            navigationCamera.navigationCameraState == .transitionToFollowing
-        userCourseView.update(location: location,
-                              pitch: pitch ?? mapView.cameraView.pitch,
-                              direction: direction ?? mapView.bearing,
-                              animated: animated,
-                              tracksUserCourse: tracksUserCourse)
-        
-        userCourseView.center = mapView.screenCoordinate(for: location.coordinate).point
     }
 }

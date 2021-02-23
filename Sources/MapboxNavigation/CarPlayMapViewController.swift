@@ -200,7 +200,7 @@ public class CarPlayMapViewController: UIViewController, NavigationCameraDelegat
 @available(iOS 12.0, *)
 extension CarPlayMapViewController: StyleManagerDelegate {
     public func location(for styleManager: StyleManager) -> CLLocation? {
-        return navigationMapView.userLocationForCourseTracking ?? navigationMapView.mapView.locationManager.latestLocation?.internalLocation ?? coarseLocationManager.location
+        return navigationMapView.mostRecentUserCourseViewLocation ?? navigationMapView.mapView.locationManager.latestLocation?.internalLocation ?? coarseLocationManager.location
     }
     
     public func styleManager(_ styleManager: StyleManager, didApply style: Style) {

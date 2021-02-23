@@ -265,15 +265,16 @@ class RouteMapViewController: UIViewController {
     }
 
     @objc func recenter(_ sender: AnyObject) {
-        navigationMapView.enableFrameByFrameCourseViewTracking(for: 3)
-        navigationMapView.updateCourseTracking(location: navigationMapView.userLocationForCourseTracking)
-        navigationMapView.navigationCamera.requestNavigationCameraToFollowing()
+        guard let location = navigationMapView.mostRecentUserCourseViewLocation else { return }
         
+        navigationMapView.updateUserCourseView(location)
+        delegate?.mapViewController(self, didCenterOn: location)
+        
+        navigationMapView.enableFrameByFrameCourseViewTracking(for: 3)
+        navigationMapView.navigationCamera.requestNavigationCameraToFollowing()
         navigationMapView.addArrow(route: router.route,
                                    legIndex: router.routeProgress.legIndex,
                                    stepIndex: router.routeProgress.currentLegProgress.stepIndex + 1)
-        
-        delegate?.mapViewController(self, didCenterOn: navigationMapView.userLocationForCourseTracking!)
     }
 
     @objc func toggleMute(_ sender: UIButton) {

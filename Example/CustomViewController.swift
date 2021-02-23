@@ -100,8 +100,8 @@ class CustomViewController: UIViewController {
         instructionsBannerView.updateDistance(for: routeProgress.currentLegProgress.currentStepProgress)
         instructionsBannerView.isHidden = false
         
-        // Update the user puck
-        navigationMapView.updateCourseTracking(location: location, animated: true)
+        // Update `UserCourseView` to be placed on the most recent location.
+        navigationMapView.updateUserCourseView(location, animated: true)
     }
     
     @objc func updateInstructionsBanner(notification: NSNotification) {
