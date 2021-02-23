@@ -172,7 +172,6 @@
 		35CDA8982190F6980072B675 /* turn_left.data in Resources */ = {isa = PBXBuildFile; fileRef = 35CDA8812190F5080072B675 /* turn_left.data */; };
 		35CDA8992190F6980072B675 /* UnionSquare-to-GGPark.route in Resources */ = {isa = PBXBuildFile; fileRef = 35CDA88B2190F5130072B675 /* UnionSquare-to-GGPark.route */; };
 		35CF34B11F0A733200C2692E /* UIFont.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35CF34B01F0A733200C2692E /* UIFont.swift */; };
-		35D825FE1E6A2EC60088F83B /* MapboxNavigation.h in Headers */ = {isa = PBXBuildFile; fileRef = 35D825FD1E6A2EC60088F83B /* MapboxNavigation.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		35DA85791FC45787004092EC /* StatusView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35DA85781FC45787004092EC /* StatusView.swift */; };
 		35DC585D1FABC61100B5A956 /* InstructionsBannerViewIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35DC585C1FABC61100B5A956 /* InstructionsBannerViewIntegrationTests.swift */; };
 		35DC9D8F1F4321CC001ECD64 /* route-with-lanes.json in Resources */ = {isa = PBXBuildFile; fileRef = 35DC9D8E1F4321CC001ECD64 /* route-with-lanes.json */; };
@@ -319,7 +318,6 @@
 		C5A7EC5C1FD610A80008B9BA /* VisualInstructionComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5A7EC5B1FD610A80008B9BA /* VisualInstructionComponent.swift */; };
 		C5ABB50E20408D2C00AFA92C /* NavigationServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5ABB50D20408D2C00AFA92C /* NavigationServiceTests.swift */; };
 		C5ADFBD81DDCC7840011824B /* MapboxCoreNavigationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5ADFBD71DDCC7840011824B /* MapboxCoreNavigationTests.swift */; };
-		C5C94C1B1DDCD22B0097296A /* MapboxCoreNavigation.h in Headers */ = {isa = PBXBuildFile; fileRef = C5ADFBCC1DDCC7840011824B /* MapboxCoreNavigation.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		C5C94C1C1DDCD2340097296A /* LegacyRouteController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5ADFBF91DDCC9580011824B /* LegacyRouteController.swift */; };
 		C5C94C1D1DDCD2370097296A /* RouteProgress.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5ADFBFB1DDCC9AD0011824B /* RouteProgress.swift */; };
 		C5CFE4881EF2FD4C006F48E8 /* MMEEventsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5CFE4871EF2FD4C006F48E8 /* MMEEventsManager.swift */; };
@@ -668,7 +666,6 @@
 		35CDA88B2190F5130072B675 /* UnionSquare-to-GGPark.route */ = {isa = PBXFileReference; lastKnownFileType = file.bplist; path = "UnionSquare-to-GGPark.route"; sourceTree = "<group>"; };
 		35CDA88C2190F5140072B675 /* route-with-banner-instructions.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "route-with-banner-instructions.json"; sourceTree = "<group>"; };
 		35CF34B01F0A733200C2692E /* UIFont.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIFont.swift; sourceTree = "<group>"; };
-		35D825FD1E6A2EC60088F83B /* MapboxNavigation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MapboxNavigation.h; sourceTree = "<group>"; };
 		35DA85781FC45787004092EC /* StatusView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusView.swift; sourceTree = "<group>"; };
 		35DC585C1FABC61100B5A956 /* InstructionsBannerViewIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstructionsBannerViewIntegrationTests.swift; sourceTree = "<group>"; };
 		35DC9D8E1F4321CC001ECD64 /* route-with-lanes.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "route-with-lanes.json"; sourceTree = "<group>"; };
@@ -837,7 +834,6 @@
 		C5A9DDBD202E12EE007D52DA /* MapboxSpeech.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MapboxSpeech.framework; path = Carthage/Build/iOS/MapboxSpeech.framework; sourceTree = "<group>"; };
 		C5ABB50D20408D2C00AFA92C /* NavigationServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationServiceTests.swift; sourceTree = "<group>"; };
 		C5ADFBC91DDCC7840011824B /* MapboxCoreNavigation.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = MapboxCoreNavigation.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		C5ADFBCC1DDCC7840011824B /* MapboxCoreNavigation.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MapboxCoreNavigation.h; sourceTree = "<group>"; };
 		C5ADFBCD1DDCC7840011824B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		C5ADFBD21DDCC7840011824B /* MapboxCoreNavigationTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MapboxCoreNavigationTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		C5ADFBD71DDCC7840011824B /* MapboxCoreNavigationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapboxCoreNavigationTests.swift; sourceTree = "<group>"; };
@@ -1429,7 +1425,6 @@
 				5A1C075724BDEB44000A6330 /* PassiveLocationManager.swift */,
 				AEC3AC992106703100A26F34 /* HighwayShield.swift */,
 				8A41F5EB25BF624900BD6FCF /* MapOrnamentPosition.swift */,
-				35D825FD1E6A2EC60088F83B /* MapboxNavigation.h */,
 			);
 			name = Navigation;
 			sourceTree = "<group>";
@@ -1672,7 +1667,6 @@
 				8DCE104F210FC5880048B0FB /* EndOfRouteFeedback.swift */,
 				64847A031F04629D003F3A69 /* Feedback.swift */,
 				C5ADFBCD1DDCC7840011824B /* Info.plist */,
-				C5ADFBCC1DDCC7840011824B /* MapboxCoreNavigation.h */,
 				353E68FB1EF0B7F8007B2AE5 /* NavigationLocationManager.swift */,
 				C5E7A31B1F4F6828001CB015 /* NavigationRouteOptions.swift */,
 				35375EC01F31FA86004CE727 /* NavigationSettings.swift */,
@@ -1731,7 +1725,6 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				35D825FE1E6A2EC60088F83B /* MapboxNavigation.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1748,7 +1741,6 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				C5C94C1B1DDCD22B0097296A /* MapboxCoreNavigation.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

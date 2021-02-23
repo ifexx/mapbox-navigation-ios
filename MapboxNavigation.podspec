@@ -32,7 +32,7 @@ Pod::Spec.new do |s|
 
   # ――― Source Code ―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――― #
 
-  s.source_files = "Sources/MapboxNavigation/**/*.{h,m,swift}"
+  s.source_files = "Sources/MapboxNavigation/**/*.swift"
 
   # ――― Resources ―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――― #
 
