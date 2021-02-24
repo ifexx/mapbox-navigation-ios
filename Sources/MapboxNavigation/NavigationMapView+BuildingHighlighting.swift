@@ -25,7 +25,7 @@ extension NavigationMapView {
      */
     public func unhighlightBuildings() {
         guard let _ = try? mapView.style.getLayer(with: IdentifierString.buildingExtrusionLayer, type: FillExtrusionLayer.self).get() else { return }
-        foundBuildingIds.removeAll()
+        foundBuildingIds = Set<Double>()
         let _ = mapView.style.removeStyleLayer(forLayerId: IdentifierString.buildingExtrusionLayer)
     }
 
@@ -60,6 +60,7 @@ extension NavigationMapView {
     }
 
     private func addBuildingsLayer(with identifiers: Set<Double>, in3D: Bool = false, extrudeAll: Bool = false) {
+        mapView.style.removeStyleLayer(forLayerId: IdentifierString.buildingExtrusionLayer)
         if identifiers.isEmpty { return }
         var highlightedBuildingsLayer = FillExtrusionLayer(id: IdentifierString.buildingExtrusionLayer)
         highlightedBuildingsLayer.source = "composite"
