@@ -283,28 +283,6 @@ class ViewController: UIViewController {
         navigationItem.rightBarButtonItem = settingsBarButtonItem
     }
     
-    func goGippo() {
-        let destinationCoordinate = CLLocationCoordinate2D(latitude: 54.01452608275952,
-                                                           longitude: 27.257717128657646)
-        
-        let waypoint = Waypoint(coordinate: destinationCoordinate, name: "Zaslavl")
-        waypoint.targetCoordinate = destinationCoordinate
-        waypoints = [waypoint]
-        
-        requestRoute()
-    }
-    
-    func goHome() {
-        let destinationCoordinate = CLLocationCoordinate2D(latitude: 54.00662547703578,
-                                                           longitude: 27.283981323032123)
-        
-        let waypoint = Waypoint(coordinate: destinationCoordinate, name: "Home")
-        waypoint.targetCoordinate = destinationCoordinate
-        waypoints = [waypoint]
-        
-        requestRoute()
-    }
-    
     @objc func handleLongPress(_ gesture: UILongPressGestureRecognizer) {
         guard gesture.state == .began else { return }
         let gestureLocation = gesture.location(in: navigationMapView)
@@ -338,13 +316,8 @@ class ViewController: UIViewController {
         
         let toggleDayNightStyle: ActionHandler = { _ in self.toggleDayNightStyle() }
         
-        let handleGippo: ActionHandler = { _ in self.goGippo() }
-        let handleHome: ActionHandler = { _ in self.goHome() }
-        
         let actions: [(String, UIAlertAction.Style, ActionHandler?)] = [
             ("Toggle Day/Night Style", .default, toggleDayNightStyle),
-            ("Go Gippo", .default, handleGippo),
-            ("Go Home", .default, handleHome),
             ("Cancel", .cancel, nil)
         ]
         
