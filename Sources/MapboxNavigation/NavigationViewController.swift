@@ -335,10 +335,13 @@ open class NavigationViewController: UIViewController, NavigationStatusPresenter
               let mapView = mapViewController?.navigationMapView.mapView else {
             return
         }
-        let mapTileSource = try! TileStoreManager.getTileStore(for: mapView.__map.getResourceOptions())
-        let styleURLs = mapView.__map.getStyleSourceURLs(["raster", "vector"])
-        let mapOptions = PredictiveCacheManager.MapOptions(mapTileSource.value as! TileStore,
+        let mapTileSource = try? TileStoreManager.getTileStore(for: mapView.__map.getResourceOptions())
+        var mapOptions: PredictiveCacheManager.MapOptions?
+        if let tileStore = mapTileSource?.value as? TileStore {
+            let styleURLs = mapView.__map.getStyleSourceURLs(["raster", "vector"])
+            mapOptions = PredictiveCacheManager.MapOptions(tileStore,
                                                            styleURLs)
+        }
         
         predictiveCacheManager = PredictiveCacheManager(predictiveCacheLocationOptions: predictiveCacheLocationOptions,
                                                         mapOptions: mapOptions)

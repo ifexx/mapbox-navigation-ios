@@ -18,13 +18,16 @@ public class PredictiveCacheManager {
     private(set) var controllers: [PredictiveCacheController] = []
     
     /// Default initializer
-    public convenience init(predictiveCacheLocationOptions: PredictiveCacheLocationOptions, mapOptions: MapOptions) {
+    ///
+    /// - parameter predictiveCacheLocationOptions: `PredictiveCacheLocationOptions` which configure various caching parameters like radius area to cache.
+    /// - parameter mapOptions: A `MapOptions` which contains info about `Map` tiles like it's location and tilesets to be cached. If set to `nil` - predictive caching won't be enbled for map tiles.
+    public convenience init(predictiveCacheLocationOptions: PredictiveCacheLocationOptions, mapOptions: MapOptions?) {
         self.init(predictiveCacheLocationOptions: predictiveCacheLocationOptions,
                   navigatorWithHistory: NavigatorProvider.sharedWeakNavigator(),
                   mapOptions: mapOptions)
     }
     
-    init(predictiveCacheLocationOptions: PredictiveCacheLocationOptions, navigatorWithHistory: NavigatorWithHistory, mapOptions: MapOptions) {
+    init(predictiveCacheLocationOptions: PredictiveCacheLocationOptions, navigatorWithHistory: NavigatorWithHistory, mapOptions: MapOptions?) {
         self.navigatorWithHistory = navigatorWithHistory
         
         initControllers(options: predictiveCacheLocationOptions,
@@ -32,9 +35,11 @@ public class PredictiveCacheManager {
     }
     
     private func initControllers(options: PredictiveCacheLocationOptions,
-                                 mapOptions: MapOptions) {
-        controllers.append(contentsOf: initMapControllers(options: options, mapOptions: mapOptions))
+                                 mapOptions: MapOptions?) {
         controllers.append(initNavigatorController(options: options))
+        if let mapOptions = mapOptions {
+            controllers.append(contentsOf: initMapControllers(options: options, mapOptions: mapOptions))
+        }
     }
     
     private func initMapControllers(options: PredictiveCacheLocationOptions,
@@ -63,8 +68,7 @@ public class PredictiveCacheManager {
                                                                   cacheOptions: cacheOptions,
                                                                   locationTrackerOptions: options.toPredictiveLocationTrackerOptions())
         } else {
-            return try! navigator.createPredictiveCacheController(forCacheOptions: cacheOptions,
-                                                                  locationTrackerOptions: options.toPredictiveLocationTrackerOptions())
+            return try! navigator.createPredictiveCacheController(for: options.toPredictiveLocationTrackerOptions())
         }
     }
 }

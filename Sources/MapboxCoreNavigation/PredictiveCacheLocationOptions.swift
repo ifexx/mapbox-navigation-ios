@@ -5,17 +5,17 @@ import MapboxNavigationNative
 /// `PredictiveCacheLocationOptions` controls various configurations for a `Predictive Caching` mechanic.
 public class PredictiveCacheLocationOptions {
     
-    /// How far around the user's location we're going to cache, in meters.
+    /// How far around the user's location we're going to cache, _in meters_.
     ///
-    /// Defaults to 20
+    /// Defaults to 2 km
     public var currentLocationRadiusInMeters: UInt32
-    /// How far around the active route we're going to cache, in meters (if route is set).
+    /// How far around the active route we're going to cache, _in meters_ (if route is set).
     ///
-    /// Defaults to 5
+    /// Defaults to 500 m
     public var routeBufferRadiusInMeters: UInt32
-    /// How far around the destination location we're going to cache, in meters (if route is set).
+    /// How far around the destination location we're going to cache, _in meters_ (if route is set).
     ///
-    /// Defaults to 50
+    /// Defaults to 5 km
     public var destinationLocationRadiusInMeters: UInt32
     /// How many download threads will be used for caching
     ///
@@ -23,7 +23,7 @@ public class PredictiveCacheLocationOptions {
     public var concurrency: UInt32
     
     /// Default initializer
-    public init(currentLocationRadius: UInt32 = 20, routeBufferRadius: UInt32 = 5, destinationLocationRadius: UInt32 = 50, concurrency: UInt32 = 2) {
+    public init(currentLocationRadius: UInt32 = 2_000, routeBufferRadius: UInt32 = 500, destinationLocationRadius: UInt32 = 5_000, concurrency: UInt32 = 2) {
         currentLocationRadiusInMeters = currentLocationRadius
         routeBufferRadiusInMeters = routeBufferRadius
         destinationLocationRadiusInMeters = destinationLocationRadius

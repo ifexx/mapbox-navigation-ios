@@ -262,13 +262,10 @@ open class NavigationMapView: UIView {
             fatalError("Access token was not set.")
         }
         
-        var options: ResourceOptions!
-        if Bundle.mapboxNavigationIfInstalled?.ensureSuggestedTileURLExists() ?? false {
-            options = ResourceOptions(accessToken: accessToken,
-                                      tileStorePath: Bundle.mapboxNavigationIfInstalled?.suggestedTileURL?.absoluteString)
-        } else {
-            options = ResourceOptions(accessToken: accessToken)
-        }
+        let tileStoreURL = FileManager.default.urls(for: .documentDirectory,
+                                                    in: .userDomainMask).first?.appendingPathComponent("com.mapbox.NavigationMapView")
+        let options = ResourceOptions(accessToken: accessToken,
+                                      tileStorePath: tileStoreURL?.path)
         
         mapView = MapView(with: frame, resourceOptions: options)
         mapView.translatesAutoresizingMaskIntoConstraints = false

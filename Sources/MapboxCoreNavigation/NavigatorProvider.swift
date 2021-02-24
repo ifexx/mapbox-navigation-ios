@@ -21,6 +21,7 @@ public class NavigatorProvider {
     
     static public let defaultVersion = ""
     static private let internalQueue: DispatchQueue = DispatchQueue(label:"com.mapbox.coreNavigation.NavigatorProvider.internalQueue")
+    static private let tileStoreLabel = "com.mapbox.coreNavigation.NavigatorProvider"
     static private weak var _sharedNavigatorWithHistory: NavigatorWithHistory?
     
     /// Provides a new or an existing one `Navigator` instance along with related `HistoryRecorderHandle`, satisfying provided configuration.
@@ -40,12 +41,8 @@ public class NavigatorProvider {
             } else {
                 var tilesPath: String! = tilesURL?.path
                 if tilesPath == nil {
-                    let bundle = Bundle.mapboxCoreNavigation
-                    if bundle.ensureSuggestedTileURLExists() {
-                        tilesPath = bundle.suggestedTileURL!.path
-                    } else {
-                        preconditionFailure("Could not access cache storage")
-                    }
+                    tilesPath = FileManager.default.urls(for: .documentDirectory,
+                                                         in: .userDomainMask).first?.appendingPathComponent(tileStoreLabel).path
                 }
                 
                 let settingsProfile = SettingsProfile(application: ProfileApplication.kMobile, platform: ProfilePlatform.KIOS)
