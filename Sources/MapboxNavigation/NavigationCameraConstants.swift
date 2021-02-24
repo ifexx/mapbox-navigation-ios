@@ -1,19 +1,23 @@
 import Foundation
+import MapboxMaps
 
-public extension Notification.Name {
-
-    static let navigationCameraStateDidChange: Notification.Name = .init(rawValue: "NavigationCameraStateDidChange")
-}
-
-extension NavigationCamera {
+extension CameraOptions {
     
-    public static let navigationCameraStateDidChangeKey: String = "NavigationCameraStateDidChange"
-}
+    public struct NotificationUserInfoKey: Hashable, Equatable, RawRepresentable {
+        public typealias RawValue = String
 
-extension NavigationViewportDataSource {
-    
-    public static let followingMobileCameraKey: String = "FollowingMobileCamera"
-    public static let overviewMobileCameraKey: String = "OverviewMobileCamera"
-    public static let followingHeadUnitCameraKey: String = "FollowingHeadUnitCamera"
-    public static let overviewHeadUnitCameraKey: String = "OverviewHeadUnitCamera"
+        public var rawValue: String
+
+        public init(rawValue: String) {
+            self.rawValue = rawValue
+        }
+        
+        public static let followingMobileCameraKey: NotificationUserInfoKey = .init(rawValue: "FollowingMobileCamera")
+        
+        public static let overviewMobileCameraKey: NotificationUserInfoKey = .init(rawValue: "OverviewMobileCamera")
+        
+        public static let followingHeadUnitCameraKey: NotificationUserInfoKey = .init(rawValue: "FollowingHeadUnitCamera")
+        
+        public static let overviewHeadUnitCameraKey: NotificationUserInfoKey = .init(rawValue: "OverviewHeadUnitCamera")
+    }
 }

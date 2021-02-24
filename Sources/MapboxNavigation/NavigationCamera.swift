@@ -5,10 +5,9 @@ public class NavigationCamera: NSObject, ViewportDataSourceDelegate {
     
     public private(set) var navigationCameraState: NavigationCameraState = .idle {
         didSet {
-            delegate?.navigationCameraStateDidChange(navigationCameraState)
-            NotificationCenter.default.post(name: .navigationCameraStateDidChange, object: self, userInfo: [
-                NavigationCamera.navigationCameraStateDidChangeKey: navigationCameraState,
-            ])
+            navigationCameraStateObservers.forEach {
+                $0.navigationCameraStateDidChange(self, navigationCameraState: navigationCameraState)
+            }
         }
     }
     
@@ -22,7 +21,7 @@ public class NavigationCamera: NSObject, ViewportDataSourceDelegate {
     
     weak var mapView: MapView?
     
-    weak var delegate: NavigationCameraDelegate?
+    var navigationCameraStateObservers: [NavigationCameraStateObserver] = []
     
     var navigationCameraType: NavigationCameraType = .mobile
     
@@ -45,20 +44,28 @@ public class NavigationCamera: NSObject, ViewportDataSourceDelegate {
         makeGestureRecognizersRespectCourseTracking()
     }
     
+    func registerNavigationCameraStateObserver(_ navigationCameraStateObserver: NavigationCameraStateObserver) {
+        navigationCameraStateObservers.append(navigationCameraStateObserver)
+    }
+    
+    func unregisterNavigationCameraStateObserver(_ navigationCameraStateObserver: NavigationCameraStateObserver) {
+        // TODO: Add ability to remove subscribers.
+    }
+    
     // MARK: - ViewportDataSourceDelegate methods
     
-    public func viewportDataSource(_ dataSource: ViewportDataSource, didUpdate cameraOptions: [String : CameraOptions]) {
+    public func viewportDataSource(_ dataSource: ViewportDataSource, didUpdate cameraOptions: [CameraOptions.NotificationUserInfoKey : CameraOptions]) {
         NSLog("[NavigationCamera] Current camera state: \(navigationCameraState)")
         
         switch navigationCameraState {
         case .following:
             switch navigationCameraType {
             case .headUnit:
-                if let followingHeadUnitCamera = cameraOptions[NavigationViewportDataSource.followingHeadUnitCameraKey] {
+                if let followingHeadUnitCamera = cameraOptions[CameraOptions.NotificationUserInfoKey.followingHeadUnitCameraKey] {
                     cameraStateTransition.updateForFollowing(followingHeadUnitCamera, completion: nil)
                 }
             case .mobile:
-                if let followingMobileCamera = cameraOptions[NavigationViewportDataSource.followingMobileCameraKey] {
+                if let followingMobileCamera = cameraOptions[CameraOptions.NotificationUserInfoKey.followingMobileCameraKey] {
                     cameraStateTransition.updateForFollowing(followingMobileCamera, completion: nil)
                 }
             }
@@ -67,11 +74,11 @@ public class NavigationCamera: NSObject, ViewportDataSourceDelegate {
         case .overview:
             switch navigationCameraType {
             case .headUnit:
-                if let overviewHeadUnitCamera = cameraOptions[NavigationViewportDataSource.overviewHeadUnitCameraKey] {
+                if let overviewHeadUnitCamera = cameraOptions[CameraOptions.NotificationUserInfoKey.overviewHeadUnitCameraKey] {
                     cameraStateTransition.updateForOverview(overviewHeadUnitCamera, completion: nil)
                 }
             case .mobile:
-                if let overviewMobileCamera = cameraOptions[NavigationViewportDataSource.overviewMobileCameraKey] {
+                if let overviewMobileCamera = cameraOptions[CameraOptions.NotificationUserInfoKey.overviewMobileCameraKey] {
                     cameraStateTransition.updateForOverview(overviewMobileCamera, completion: nil)
                 }
             }

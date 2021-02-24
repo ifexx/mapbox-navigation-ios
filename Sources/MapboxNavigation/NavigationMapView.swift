@@ -135,11 +135,6 @@ open class NavigationMapView: UIView {
             return true
         }
     }
-    
-    /**
-     The minimum default insets from the content frame to the edges of the user course view.
-     */
-    static let courseViewMinimumInsets = UIEdgeInsets(top: 50, left: 50, bottom: 50, right: 50)
 
     /**
      A type that represents a `UIView` that is `CourseUpdatable`.
@@ -185,22 +180,19 @@ open class NavigationMapView: UIView {
         makeGestureRecognizersUpdateCourseView()
         setupGestureRecognizers()
         installUserCourseView()
-        subscribeForNotifications()
+        registerObservers()
     }
     
     deinit {
-        unsubscribeFromNotifications()
+        unregisterObservers()
     }
     
-    func subscribeForNotifications() {
-        NotificationCenter.default.addObserver(self,
-                                               selector: #selector(navigationCameraStateDidChange(_ :)),
-                                               name: .navigationCameraStateDidChange,
-                                               object: nil)
+    func registerObservers() {
+        navigationCamera.registerNavigationCameraStateObserver(self)
     }
     
-    func unsubscribeFromNotifications() {
-        NotificationCenter.default.removeObserver(self, name: .navigationCameraStateDidChange, object: nil)
+    func unregisterObservers() {
+        navigationCamera.unregisterNavigationCameraStateObserver(self)
     }
     
     func setupMapView(_ frame: CGRect, navigationCameraType: NavigationCameraType = .mobile) {
@@ -228,19 +220,6 @@ open class NavigationMapView: UIView {
         
         navigationCamera = NavigationCamera(mapView, navigationCameraType: navigationCameraType)
         navigationCamera.requestNavigationCameraToFollowing()
-    }
-    
-    @objc func navigationCameraStateDidChange(_ notification: Notification) {
-        if let navigationCameraState = notification.userInfo?[NavigationCamera.navigationCameraStateDidChangeKey] as? NavigationCameraState,
-           let location = mostRecentUserCourseViewLocation {
-            switch navigationCameraState {
-            case .idle:
-                break
-            case .transitionToFollowing, .following, .transitionToOverview, .overview:
-                updateUserCourseView(location)
-                break
-            }
-        }
     }
     
     func setupGestureRecognizers() {
@@ -357,11 +336,6 @@ open class NavigationMapView: UIView {
     
     // MARK: Feature Addition/removal properties and methods
     
-    /**
-     Showcases route array. Adds routes and waypoints to map, and sets camera to point encompassing the route.
-     */
-    public static let defaultPadding: UIEdgeInsets = UIEdgeInsets(top: 10, left: 20, bottom: 10, right: 20)
-    
     public func showcase(_ routes: [Route], animated: Bool = false) {
         guard let activeRoute = routes.first,
               let coordinates = activeRoute.shape?.coordinates,
@@ -374,7 +348,18 @@ open class NavigationMapView: UIView {
         show(routes)
         showWaypoints(on: activeRoute)
         
-        navigationCamera.requestNavigationCameraToOverview()
+        navigationCamera.requestNavigationCameraToIdle()
+        fitCamera(to: activeRoute, animated: animated)
+    }
+    
+    func fitCamera(to route: Route, facing direction: CLLocationDirection = 0, animated: Bool = false) {
+        guard let routeShape = route.shape, !routeShape.coordinates.isEmpty else { return }
+        let cameraOptions = mapView?.cameraManager.camera(fitting: .lineString(routeShape))
+        cameraOptions?.padding = safeArea
+        
+        if let cameraOptions = cameraOptions {
+            mapView?.cameraManager.setCamera(to: cameraOptions, animated: animated)
+        }
     }
     
     public func show(_ routes: [Route], legIndex: Int = 0) {
@@ -954,6 +939,21 @@ open class NavigationMapView: UIView {
         if sender.state == .changed {
             guard let location = mostRecentUserCourseViewLocation else { return }
             updateUserCourseView(location)
+        }
+    }
+}
+
+extension NavigationMapView: NavigationCameraStateObserver {
+    
+    func navigationCameraStateDidChange(_ navigationCamera: NavigationCamera, navigationCameraState: NavigationCameraState) {
+        if let location = mostRecentUserCourseViewLocation {
+            switch navigationCameraState {
+            case .idle:
+                break
+            case .transitionToFollowing, .following, .transitionToOverview, .overview:
+                updateUserCourseView(location)
+                break
+            }
         }
     }
 }

@@ -12,7 +12,7 @@ import CarPlay
  - seealso: NavigationViewController
  */
 @available(iOS 12.0, *)
-public class CarPlayNavigationViewController: UIViewController, NavigationCameraDelegate {
+public class CarPlayNavigationViewController: UIViewController {
     /**
      The view controller’s delegate.
      */
@@ -135,7 +135,6 @@ public class CarPlayNavigationViewController: UIViewController, NavigationCamera
     func setupNavigationMapView() {
         let navigationMapView = NavigationMapView(frame: view.bounds, navigationCameraType: .headUnit)
         navigationMapView.translatesAutoresizingMaskIntoConstraints = false
-        navigationMapView.navigationCamera.delegate = self
         
         navigationMapView.mapView.on(.styleLoadingFinished) { [weak self] _ in
             self?.navigationMapView?.localizeLabels()
@@ -179,10 +178,6 @@ public class CarPlayNavigationViewController: UIViewController, NavigationCamera
         styleManager = StyleManager()
         styleManager?.delegate = self
         styleManager?.styles = self.styles
-    }
-    
-    public func navigationCameraStateDidChange(_ state: NavigationCameraState) {
-        
     }
     
     // MARK: - Notifications observer methods

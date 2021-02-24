@@ -180,11 +180,6 @@ public class CarPlayManager: NSObject {
         super.init()
         
         self.mapTemplateProvider.delegate = self
-        subscribeForNotifications()
-    }
-    
-    deinit {
-        unsubscribeFromdNotifications()
     }
     
     /**
@@ -206,34 +201,6 @@ public class CarPlayManager: NSObject {
         if let mapTemplate = mainMapTemplate, let routeChoice = trip.routeChoices.first {
             self.mapTemplate(mapTemplate, startedTrip: trip, using: routeChoice)
         }
-    }
-    
-    func subscribeForNotifications() {
-        NotificationCenter.default.addObserver(self,
-                                               selector: #selector(navigationCameraStateDidChange(_:)),
-                                               name: .navigationCameraStateDidChange,
-                                               object: nil)
-    }
-    
-    @objc func navigationCameraStateDidChange(_ notification: Notification) {
-        if let navigationCameraState = notification.userInfo?[NavigationCamera.navigationCameraStateDidChangeKey] as? NavigationCameraState {
-            switch navigationCameraState {
-            case .idle:
-                break
-            case .transitionToFollowing, .following:
-                userTrackingButton.image = UIImage(named: "carplay_overview", in: .mapboxNavigation, compatibleWith: nil)
-                break
-            case .transitionToOverview, .overview:
-                userTrackingButton.image = UIImage(named: "carplay_locate", in: .mapboxNavigation, compatibleWith: nil)
-                break
-            }
-        }
-    }
-
-    func unsubscribeFromdNotifications() {
-        NotificationCenter.default.removeObserver(self,
-                                                  name: .navigationCameraStateDidChange,
-                                                  object: nil)
     }
 }
 
@@ -261,6 +228,8 @@ extension CarPlayManager: CPApplicationDelegate {
         interfaceController.setRootTemplate(mapTemplate, animated: false)
             
         eventsManager.sendCarPlayConnectEvent()
+        
+        navigationMapView?.navigationCamera.registerNavigationCameraStateObserver(self)
     }
 
     public func application(_ application: UIApplication, didDisconnectCarInterfaceController interfaceController: CPInterfaceController, from window: CPWindow) {
@@ -361,7 +330,14 @@ extension CarPlayManager: CPInterfaceControllerDelegate {
     }
     
     public func templateWillDisappear(_ template: CPTemplate, animated: Bool) {
+        guard let interface = interfaceController else { return }
+        
+        let onFreedriveMapOrNavigating = interface.templates.count == 1
 
+        guard let top = interface.topTemplate,
+              type(of: top) == CPSearchTemplate.self || onFreedriveMapOrNavigating else { return }
+        
+        navigationMapView?.navigationCamera.requestNavigationCameraToFollowing()
     }
 }
 
@@ -717,6 +693,23 @@ internal class MapTemplateProvider: NSObject {
 
     open func createMapTemplate() -> CPMapTemplate {
         return CPMapTemplate()
+    }
+}
+
+@available(iOS 12.0, *)
+extension CarPlayManager: NavigationCameraStateObserver {
+    
+    func navigationCameraStateDidChange(_ navigationCamera: NavigationCamera, navigationCameraState: NavigationCameraState) {
+        switch navigationCameraState {
+        case .idle:
+            break
+        case .transitionToFollowing, .following:
+            userTrackingButton.image = UIImage(named: "carplay_overview", in: .mapboxNavigation, compatibleWith: nil)
+            break
+        case .transitionToOverview, .overview:
+            userTrackingButton.image = UIImage(named: "carplay_locate", in: .mapboxNavigation, compatibleWith: nil)
+            break
+        }
     }
 }
 

@@ -6,7 +6,7 @@ import Turf
 import MapboxMaps
 import MapboxCoreMaps
 
-class RouteMapViewController: UIViewController {
+class RouteMapViewController: UIViewController, NavigationCameraStateObserver {
     
     var navigationView: NavigationView {
         return view as! NavigationView
@@ -194,28 +194,24 @@ class RouteMapViewController: UIViewController {
                                                name: UIDevice.orientationDidChangeNotification,
                                                object: nil)
         
-        NotificationCenter.default.addObserver(self,
-                                               selector: #selector(navigationCameraStateDidChange(_ :)),
-                                               name: .navigationCameraStateDidChange,
-                                               object: nil)
+        navigationMapView.navigationCamera.registerNavigationCameraStateObserver(self)
+        
         subscribeToKeyboardNotifications()
     }
     
-    @objc func navigationCameraStateDidChange(_ notification: Notification) {
-        if let navigationCameraState = notification.userInfo?[NavigationCamera.navigationCameraStateDidChangeKey] as? NavigationCameraState {
-            switch navigationCameraState {
-            case .idle:
-                break
-            case .transitionToFollowing, .following:
-                navigationView.overviewButton.isHidden = false
-                navigationView.resumeButton.isHidden = true
-                break
-            case .transitionToOverview, .overview:
-                navigationView.overviewButton.isHidden = true
-                navigationView.resumeButton.isHidden = false
-                navigationView.wayNameView.isHidden = true
-                break
-            }
+    func navigationCameraStateDidChange(_ navigationCamera: NavigationCamera, navigationCameraState: NavigationCameraState) {
+        switch navigationCameraState {
+        case .idle:
+            break
+        case .transitionToFollowing, .following:
+            navigationView.overviewButton.isHidden = false
+            navigationView.resumeButton.isHidden = true
+            break
+        case .transitionToOverview, .overview:
+            navigationView.overviewButton.isHidden = true
+            navigationView.resumeButton.isHidden = false
+            navigationView.wayNameView.isHidden = true
+            break
         }
     }
 
@@ -224,9 +220,7 @@ class RouteMapViewController: UIViewController {
                                                   name: UIDevice.orientationDidChangeNotification,
                                                   object: nil)
         
-        NotificationCenter.default.removeObserver(self,
-                                                  name: .navigationCameraStateDidChange,
-                                                  object: nil)
+        navigationMapView.navigationCamera.unregisterNavigationCameraStateObserver(self)
         
         unsubscribeFromKeyboardNotifications()
     }

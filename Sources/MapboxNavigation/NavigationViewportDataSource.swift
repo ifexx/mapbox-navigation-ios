@@ -36,6 +36,16 @@ public class NavigationViewportDataSource: ViewportDataSource {
      Returns the pitch that the `NavigationCamera` initally defaults to.
      */
     public var defaultPitch: Double = 45.0
+    
+    /**
+     The minimum default insets from the content frame to the edges of the user course view.
+     */
+    public let courseViewMinimumInsets = UIEdgeInsets(top: 50, left: 50, bottom: 50, right: 50)
+    
+    /**
+     Showcases route array. Adds routes and waypoints to map, and sets camera to point encompassing the route.
+     */
+    public let defaultPadding: UIEdgeInsets = UIEdgeInsets(top: 10, left: 20, bottom: 10, right: 20)
         
     weak var mapView: MapView?
     
@@ -110,20 +120,20 @@ public class NavigationViewportDataSource: ViewportDataSource {
         }
         
         let cameraOptions = [
-            NavigationViewportDataSource.followingMobileCameraKey: followingMobileCamera,
+            CameraOptions.NotificationUserInfoKey.followingMobileCameraKey: followingMobileCamera,
         ]
         delegate?.viewportDataSource(self, didUpdate: cameraOptions)
     }
     
-    func cameraOptions(_ passiveLocation: CLLocation?, activeLocation: CLLocation?, routeProgress: RouteProgress?) -> [String: CameraOptions] {
+    func cameraOptions(_ passiveLocation: CLLocation?, activeLocation: CLLocation?, routeProgress: RouteProgress?) -> [CameraOptions.NotificationUserInfoKey: CameraOptions] {
         updateFollowingCamera(passiveLocation, activeLocation: activeLocation, routeProgress: routeProgress)
         updateOverviewCamera(passiveLocation, activeLocation: activeLocation, routeProgress: routeProgress)
         
         let cameraOptions = [
-            NavigationViewportDataSource.followingMobileCameraKey: followingMobileCamera,
-            NavigationViewportDataSource.overviewMobileCameraKey: overviewMobileCamera,
-            NavigationViewportDataSource.followingHeadUnitCameraKey: followingHeadUnitCamera,
-            NavigationViewportDataSource.overviewHeadUnitCameraKey: overviewHeadUnitCamera
+            CameraOptions.NotificationUserInfoKey.followingMobileCameraKey: followingMobileCamera,
+            CameraOptions.NotificationUserInfoKey.overviewMobileCameraKey: overviewMobileCamera,
+            CameraOptions.NotificationUserInfoKey.followingHeadUnitCameraKey: followingHeadUnitCamera,
+            CameraOptions.NotificationUserInfoKey.overviewHeadUnitCameraKey: overviewHeadUnitCamera
         ]
         
         return cameraOptions
@@ -181,18 +191,11 @@ public class NavigationViewportDataSource: ViewportDataSource {
     }
     
     func updateOverviewCamera(_ passiveLocation: CLLocation?, activeLocation: CLLocation?, routeProgress: RouteProgress?) {
-        let location = passiveLocation ?? activeLocation
         if let lineString = routeProgress?.route.shape,
            let cameraOptions = mapView?.cameraManager.camera(fitting: .lineString(lineString)) {
             overviewMobileCamera = cameraOptions
             overviewHeadUnitCamera = cameraOptions
         }
-        
-        overviewHeadUnitCamera.center = location?.coordinate
-        overviewHeadUnitCamera.bearing = 0.0
-        overviewHeadUnitCamera.padding = UIEdgeInsets(top: 0.0, left: 0.0, bottom: 0.0, right: 0.0)
-        overviewHeadUnitCamera.zoom = 10.0
-        overviewHeadUnitCamera.pitch = 0.0
     }
     
     @objc func didReroute(_ notification: NSNotification) {
@@ -223,5 +226,31 @@ public class NavigationViewportDataSource: ViewportDataSource {
     // 
     // @objc fileprivate func disableFrameByFramePositioning() {
     //     mapView?.preferredFPS = .normal
+    // }
+    
+    // CarPlay
+    // func contentInset(forOverviewing overviewing: Bool) -> UIEdgeInsets {
+    //     guard let mapView = mapView else { return .zero }
+    //
+    //     var insets = mapView.safeArea
+    //
+    //     if !overviewing {
+    //         // Puck position calculation - position it just above the bottom of the content area.
+    //         var contentFrame = mapView.bounds.inset(by: insets)
+    //
+    //         // Avoid letting the puck go partially off-screen, and add a comfortable padding beyond that.
+    //         let courseViewBounds = mapView.userCourseView.bounds
+    //
+    //         // If it is not possible to position it right above the content area, center it at the remaining space.
+    //         contentFrame = contentFrame.insetBy(dx: min(courseViewMinimumInsets.left + courseViewBounds.width / 2.0, contentFrame.width / 2.0),
+    //                                             dy: min(courseViewMinimumInsets.top + courseViewBounds.height / 2.0, contentFrame.height / 2.0))
+    //         assert(!contentFrame.isInfinite)
+    //
+    //         let y = contentFrame.maxY
+    //         let height = mapView.bounds.height
+    //         insets.top = height - insets.bottom - 2 * (height - insets.bottom - y)
+    //     }
+    //
+    //     return insets
     // }
 }

@@ -8,9 +8,7 @@ import CarPlay
  `CarPlayMapViewController` is responsible for administering the Mapbox map, the interface styles and the map template buttons to display on CarPlay.
  */
 @available(iOS 12.0, *)
-public class CarPlayMapViewController: UIViewController, NavigationCameraDelegate {
-    
-    static let defaultAltitude: CLLocationDistance = 850
+public class CarPlayMapViewController: UIViewController {
     
     var styleManager: StyleManager?
     
@@ -134,13 +132,8 @@ public class CarPlayMapViewController: UIViewController, NavigationCameraDelegat
         navigationMapView.mapView.on(.styleLoadingFinished) { _ in
             navigationMapView.localizeLabels()
         }
-        navigationMapView.navigationCamera.delegate = self
         
         self.view = navigationMapView
-    }
-    
-    public func navigationCameraStateDidChange(_ state: NavigationCameraState) {
-        
     }
 
     override public func viewDidLoad() {
@@ -194,6 +187,17 @@ public class CarPlayMapViewController: UIViewController, NavigationCameraDelegat
         closeButton.image = UIImage(named: "carplay_close", in: bundle, compatibleWith: traitCollection)
         
         return closeButton
+    }
+    
+    override public func viewSafeAreaInsetsDidChange() {
+        super.viewSafeAreaInsetsDidChange()
+        
+        guard let _ = navigationMapView.routes?.first else {
+            navigationMapView.navigationCamera.requestNavigationCameraToFollowing()
+            return
+        }
+        
+        // TODO: Verify whether camera related changes are required here.
     }
 }
 
